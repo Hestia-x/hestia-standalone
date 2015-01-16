@@ -12,7 +12,6 @@ import huck.simplehttp.HttpProcessor;
 import huck.simplehttp.HttpRequest;
 import huck.simplehttp.HttpResponse;
 
-import java.io.IOException;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,10 +20,11 @@ import java.util.HashMap;
 public class HestiaHttpProcessor implements HttpProcessor {
 	private HashMap<String, HestiaController> controllerMap;
 	
-	public HestiaHttpProcessor() throws IOException {
+	public HestiaHttpProcessor() throws Exception {
+		Class.forName(org.gjt.mm.mysql.Driver.class.getName());
 		String dbUrl = "jdbc:mysql://127.0.0.1:3306/account_book?characterEncoding=UTF-8";
 		String dbUser = "root";
-		String dbPassword = null;
+		String dbPassword = null;		
 		HestiaDB db = new HestiaMemoryDB(new LoaderMysql(new DBConnectionManager(dbUrl, dbUser, dbPassword)));
 
 		VelocityRenderer renderer = new VelocityRenderer();

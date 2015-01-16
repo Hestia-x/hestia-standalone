@@ -39,7 +39,7 @@ public class HistoryController implements HestiaController {
 			paths[paths.length-1] += "/";
 		}
 		
-		if( 3 > paths.length || paths[2] == "assets" ) {
+		if( 3 > paths.length || "assets".equals(paths[2]) ) {
 			return renderer.render("/account_book/AssetBalanceHistory.html", req, assets(req));	
 		}
 		

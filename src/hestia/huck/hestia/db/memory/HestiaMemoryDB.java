@@ -91,7 +91,7 @@ public class HestiaMemoryDB implements HestiaDB {
 	}
 	
 	
-	public HestiaMemoryDB(Loader loader) {
+	public HestiaMemoryDB(Loader loader) throws Exception {
 		assetMap = new TreeMap<>();
 		shopMap = new TreeMap<>();
 		debitCodeMap = new TreeMap<>();
@@ -127,7 +127,7 @@ public class HestiaMemoryDB implements HestiaDB {
 	}
 	
 	public abstract static class Loader {
-		abstract protected void load(HestiaMemoryDB db);
+		abstract protected void load(HestiaMemoryDB db) throws Exception;
 		
 		protected final void addAsset(HestiaMemoryDB db, MemoryAsset asset) {
 			if( db.assetMap.containsKey(asset.id()) ) {

@@ -43,7 +43,7 @@ test
 	<tbody>
 		#foreach( $accountChangeSummary in $history.balanceChangeSummaryMap.values() )
 		<tr>
-			<td class="right_thick">$accountChangeSummary.name</td>
+			<td class="right_thick">$accountChangeSummary.accountName</td>
 			<td>$accountChangeSummary.before</td>
 			<td>$accountChangeSummary.change</td>
 			<td><strong>$accountChangeSummary.balance</strong></td>
@@ -52,7 +52,7 @@ test
 	</tbody>
 	<tfoot>
 		<tr>
-			<td class="right_thick">$history.balanceChangeSummary.name</td>
+			<td class="right_thick">$history.balanceChangeSummary.accountName</td>
 			<td>$history.balanceChangeSummary.before</td>
 			<td>$history.balanceChangeSummary.change</td>
 			<td><strong>$history.balanceChangeSummary.balance</strong></td>
@@ -64,7 +64,7 @@ test
 	<thead>
 		<tr>
 			<th class="right_thick">Date</th>
-			#if( $history.groupType == "SLIP" )
+			#if( $history.groupType == "OCCURRENCE" )
 			<th class="right_thick">Shop</th>
 			#end
 			<th>Name</th>
@@ -87,11 +87,11 @@ test
 				#if( !$firstDate )
 					#set($firstSlip = true)
 				#end
-			#if( $history.groupType == "SLIP" )
+			#if( $history.groupType == "OCCURRENCE" )
 			<td class="#if($firstDate)top_thick #end #if($firstSlip)top_medium #end right_thick" rowspan="$groupData.balanceChangeList.size()">$groupData.description ($groupData.id)</td>
 			#end
 			#end
-			<td class="#if($firstDate)top_thick #end #if($firstSlip)top_medium #end">$changeData.name</td>			
+			<td class="#if($firstDate)top_thick #end #if($firstSlip)top_medium #end">$changeData.accountName</td>			
 			<td class="#if($firstDate)top_thick #end #if($firstSlip)top_medium #end">$changeData.change</td>
 			<td class="#if($firstDate)top_thick #end #if($firstSlip)top_medium #end"><strong>$changeData.balance</strong></td>
 		</tr>

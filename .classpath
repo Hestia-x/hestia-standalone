@@ -9,5 +9,6 @@
 	<classpathentry kind="lib" path="libs/commons-logging-1.1.jar"/>
 	<classpathentry kind="lib" path="libs/log4j-1.2.12.jar"/>
 	<classpathentry kind="lib" path="libs/velocity-1.7.jar"/>
+	<classpathentry kind="lib" path="libs/mysql-connector-java-5.1.5-bin.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

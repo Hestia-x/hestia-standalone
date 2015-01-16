@@ -26,7 +26,7 @@ public final class HttpResponse {
 		OK("200", "OK"),
 		PARTIAL_CONTENT("206", "Partial Content"),
 		
-		MOVED_PERMANENTLY("301", "Moved Permanently"),
+		MOVED_TEMPORARILY("302", "Moved Temporarily"),
 
 		BAD_REQUEST("400", "Bad Request"),
 		NOT_FOUND("404", "Not Found"),

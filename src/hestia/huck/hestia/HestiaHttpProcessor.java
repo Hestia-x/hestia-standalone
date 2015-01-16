@@ -1,0 +1,66 @@
+package huck.hestia;
+
+import huck.hestia.controller.DefaultController;
+import huck.hestia.controller.HistoryController;
+import huck.hestia.controller.StaticResourceController;
+import huck.hestia.db.HestiaDB;
+import huck.simplehttp.HttpException;
+import huck.simplehttp.HttpProcessor;
+import huck.simplehttp.HttpRequest;
+import huck.simplehttp.HttpResponse;
+
+import java.io.IOException;
+import java.nio.channels.WritableByteChannel;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+
+public class HestiaHttpProcessor implements HttpProcessor {
+	private HashMap<String, HestiaController> controllerMap = new HashMap<>();
+	
+	public HestiaHttpProcessor() throws IOException {
+		HestiaDB db = null;
+		VelocityRenderer renderer = new VelocityRenderer();
+		controllerMap.put("/", new DefaultController(db, renderer));
+		controllerMap.put("/history/", new HistoryController(db, renderer));
+		
+		controllerMap.put("/css/", new StaticResourceController());
+		controllerMap.put("/fonts/", new StaticResourceController());
+		controllerMap.put("/js/", new StaticResourceController());
+	}
+	
+	@Override
+	public HttpResponse process(HttpRequest req) throws HttpException, Exception {
+		String path = req.getRequestPath();
+		if( path.contains("/../") ) {
+			throw new HttpException(HttpResponse.Status.NOT_FOUND, "NOT FOUND : " + path);
+		}
+		
+		String[] pathElements = path.split("\\/");
+		ArrayList<String> lookupPathList = new ArrayList<>();
+		String nPath = "";
+		for( String pathElement : pathElements ) {
+			nPath += pathElement + "/";
+			lookupPathList.add(nPath);
+		}
+		if( !path.endsWith("/") ) {
+			lookupPathList.remove(lookupPathList.size()-1);
+			lookupPathList.add(path);
+		}
+		Collections.reverse(lookupPathList);
+		
+		for( String lookupPath : lookupPathList ) {
+			HestiaController controller = controllerMap.get(lookupPath);
+			if( null != controller ) {
+				return controller.controll(req);
+			}
+		}
+		throw new HttpException(HttpResponse.Status.NOT_FOUND, "NOT FOUND: " + lookupPathList.get(0));
+	}
+
+	@Override
+	public WritableByteChannel getBodyProcessor(HttpRequest req) {
+		return null;
+	}
+
+}

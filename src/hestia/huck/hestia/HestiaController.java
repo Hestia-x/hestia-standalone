@@ -5,14 +5,15 @@ import huck.simplehttp.HttpRequest;
 import huck.simplehttp.HttpResponse;
 
 public interface HestiaController {
-	public HttpResponse controll(HttpRequest req) throws HttpException, Exception;
+	public HttpResponse controll(HttpRequest req, String matchPath) throws HttpException, Exception;
 	
-	default void redirectTo(HttpResponse res, String path) {
-		res.setStatus(HttpResponse.Status.MOVED_PERMANENTLY);
+	default HttpResponse redirectTo(String path) {
+		HttpResponse res = new HttpResponse(HttpResponse.Status.MOVED_TEMPORARILY);
 		res.setHeader("Location", path);
+		return res;
 	}
 	
-	default void notFound() {
-		
+	default void notFound(HttpRequest req) throws HttpException {
+		throw new HttpException(HttpResponse.Status.NOT_FOUND, "Not Found: " + req.getRequestPath());
 	}
 }

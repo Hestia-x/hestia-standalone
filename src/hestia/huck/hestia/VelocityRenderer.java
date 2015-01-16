@@ -49,6 +49,16 @@ public class VelocityRenderer {
 		}
 	}
 	
+	public interface ActionFunction {
+		String apply(HttpRequest req, HashMap<String, Object> valueMap) throws Exception;
+	}
+	
+	public HttpResponse render(HttpRequest req, ActionFunction actionFunction) throws Exception {
+		HashMap<String, Object> valueMap = new HashMap<String, Object>();
+		String templatePath = actionFunction.apply(req, valueMap);
+		return render(templatePath, req, valueMap);
+	}
+	
 	public HttpResponse render(String path, HttpRequest req, HashMap<String, Object> valueMap) throws Exception {
 		Template page;
 		try {
@@ -58,7 +68,7 @@ public class VelocityRenderer {
 			res.setHeader("Content-Type", "text/plain; charset=utf-8");
 			return res;
 		}
-		
+
 		VelocityContext wrapContext = new VelocityContext(valueMap);
 		wrapContext.put("__req", req);
 		ByteArrayOutputStream out = new ByteArrayOutputStream();

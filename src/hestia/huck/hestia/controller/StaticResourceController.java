@@ -13,7 +13,7 @@ public class StaticResourceController implements HestiaController {
 	private HashMap<String, String> mimeMap = new HashMap<>();
 	
 	@Override
-	public HttpResponse controll(HttpRequest req) throws HttpException, Exception {
+	public HttpResponse controll(HttpRequest req, String matchPath) throws HttpException, Exception {
 		URL resourceUrl = ClassLoader.getSystemResource("static_resource" + req.getRequestPath());
 		if( null == resourceUrl ) {
 			return null;

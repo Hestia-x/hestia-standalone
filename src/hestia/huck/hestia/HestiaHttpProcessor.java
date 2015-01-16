@@ -3,7 +3,7 @@ package huck.hestia;
 import huck.common.jdbc.DBConnectionManager;
 import huck.hestia.controller.DefaultController;
 import huck.hestia.controller.StaticResourceController;
-import huck.hestia.controller.accountbook.HistoryController;
+import huck.hestia.controller.accountbook.ViewController;
 import huck.hestia.db.HestiaDB;
 import huck.hestia.db.memory.HestiaMemoryDB;
 import huck.hestia.db.memory.LoaderMysql;
@@ -24,14 +24,14 @@ public class HestiaHttpProcessor implements HttpProcessor {
 		Class.forName(org.gjt.mm.mysql.Driver.class.getName());
 		String dbUrl = "jdbc:mysql://127.0.0.1:3306/account_book?characterEncoding=UTF-8";
 		String dbUser = "root";
-		String dbPassword = null;		
+		String dbPassword = null;
 		HestiaDB db = new HestiaMemoryDB(new LoaderMysql(new DBConnectionManager(dbUrl, dbUser, dbPassword)));
 
 		VelocityRenderer renderer = new VelocityRenderer();
 
 		controllerMap = new HashMap<>();
-		controllerMap.put("/", new DefaultController(db, renderer));
-		controllerMap.put("/account_book/history/", new HistoryController(db, renderer));
+		controllerMap.put("/", new DefaultController(db));
+		controllerMap.put("/account_book/view/", new ViewController(db, renderer));
 		controllerMap.put("/css/", new StaticResourceController());
 		controllerMap.put("/fonts/", new StaticResourceController());
 		controllerMap.put("/js/", new StaticResourceController());
@@ -57,14 +57,17 @@ public class HestiaHttpProcessor implements HttpProcessor {
 			lookupPathList.add(path);
 		}
 		Collections.reverse(lookupPathList);
+		if( lookupPathList.isEmpty() ) {
+			lookupPathList.add("/");
+		}
 		
 		for( String lookupPath : lookupPathList ) {
 			HestiaController controller = controllerMap.get(lookupPath);
 			if( null != controller ) {
-				return controller.controll(req);
+				return controller.controll(req, lookupPath);
 			}
 		}
-		throw new HttpException(HttpResponse.Status.NOT_FOUND, "NOT FOUND: " + lookupPathList.get(0));
+		throw new HttpException(HttpResponse.Status.NOT_FOUND, "NOT FOUND: " + path);
 	}
 
 	@Override

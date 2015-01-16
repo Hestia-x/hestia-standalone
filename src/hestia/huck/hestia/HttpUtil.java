@@ -54,5 +54,15 @@ public class HttpUtil {
 			return null;
 		}
 	}
-
+	
+	public static String createStickQueryString(HttpRequest req, String... names) {
+		StringBuffer buf = new StringBuffer();
+		for( String name : names ) {
+			String value = req.getParameter(name);
+			if( null == value ) continue;
+			buf.append(name).append("=").append(value).append("&");
+		}
+		buf.deleteCharAt(buf.length()-1);
+		return buf.toString();
+	}
 }

@@ -1,12 +1,5 @@
 package huck.hestia.db;
 
-import huck.hestia.db.data.Asset;
-import huck.hestia.db.data.Credit;
-import huck.hestia.db.data.CreditCode;
-import huck.hestia.db.data.Debit;
-import huck.hestia.db.data.DebitCode;
-import huck.hestia.db.data.Shop;
-import huck.hestia.db.data.Slip;
 
 import java.time.LocalDateTime;
 import java.util.List;

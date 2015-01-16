@@ -1,19 +1,20 @@
-package huck.hestia.db.data;
+package huck.hestia.db.memory;
 
+import huck.hestia.db.Asset;
+import huck.hestia.db.Debit;
 import huck.hestia.history.Account;
-import huck.hestia.history.BalanceChanger;
 
 import java.time.LocalDateTime;
 
-public class Debit implements BalanceChanger {
+class MemoryDebit implements Debit {
 	private int id;
-	private Slip slip;
-	private DebitCode debitCode;
+	private MemorySlip slip;
+	private MemoryDebitCode debitCode;
 	private String description;
 	private int unitPrice;
 	private int quantity;
 	
-	public Debit(int id, Slip slip, DebitCode debitCode, String description, int unitPrice, int quantity) {
+	public MemoryDebit(int id, MemorySlip slip, MemoryDebitCode debitCode, String description, int unitPrice, int quantity) {
 		this.id = id;
 		slip(slip);
 		debitCode(debitCode);
@@ -22,60 +23,66 @@ public class Debit implements BalanceChanger {
 		quantity(quantity);
 	}
 	
+	@Override
 	public int id() {
 		return id;
 	}
 	
-	public Slip slip() {
+	@Override
+	public MemorySlip slip() {
 		return slip;
 	}
-	void slip(Slip slip) {
+	public void slip(MemorySlip slip) {
 		if( null == slip ) {
 			throw new IllegalArgumentException("slip can not be null");
 		}
 		this.slip = slip;
 	}
 	
-	public DebitCode debitCode() {
+	@Override
+	public MemoryDebitCode debitCode() {
 		return debitCode;
 	}
-	void debitCode(DebitCode debitCode) {
+	public void debitCode(MemoryDebitCode debitCode) {
 		if( null == debitCode ) {
 			throw new IllegalArgumentException("debitCode can not be null");
 		}
 		this.debitCode = debitCode;
 	}
 	
+	@Override
 	public String description() {
 		return description;
 	}
-	void description(String description) {
+	public void description(String description) {
 		if( null == description || 0 == description.trim().length() ) {
 			throw new IllegalArgumentException("description can not be null");
 		}
 		this.description = description;
 	}
 	
+	@Override
 	public int unitPrice() {
 		return unitPrice;
 	}
-	void unitPrice(int unitPrice) {
+	public void unitPrice(int unitPrice) {
 		this.unitPrice = unitPrice;
 	}
 	
+	@Override
 	public int quantity() {
 		return quantity;
 	}
-	void quantity(int quantity) {
+	public void quantity(int quantity) {
 		this.quantity = quantity;
 	}
 	
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends Account> T target(Class<T> cls) {
+	public <Target extends Account> Target target(Class<Target> cls) {
 		if( cls.equals(Asset.class)) {			
-			return (T)debitCode.asset();
+			return (Target)debitCode.asset();
 		} else {
 			return null;
 		}

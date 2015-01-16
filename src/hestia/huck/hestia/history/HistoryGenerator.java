@@ -12,7 +12,7 @@ import java.util.TreeMap;
 import java.util.function.Predicate;
 
 public class HistoryGenerator {
-	public static <T extends Account> AccountHistory createAccountHistory(LocalDate fromDate, LocalDate toDate, GroupType groupType, ArrayList<BalanceChanger> dataList, Class<T> targetCls, Predicate<T> targetPredicate) throws SQLException {
+	public static <Target extends Account> AccountHistory createAccountHistory(LocalDate fromDate, LocalDate toDate, GroupType groupType, ArrayList<BalanceChanger> dataList, Class<Target> targetCls, Predicate<Target> targetPredicate) throws SQLException {
 		LocalDateTime fromDttm = fromDate.atStartOfDay().minusNanos(1);
 		LocalDateTime toDttm = toDate.plusDays(1).atStartOfDay();
 
@@ -30,7 +30,7 @@ public class HistoryGenerator {
 		// 조회 기간 이전 데이터로 account별 요약표 작성.
 		TreeMap<Integer, BalanceChange> targetSummaryMap = new TreeMap<>(); // accountId -> price
 		for( BalanceChanger changer : beforeChangerList ) {
-			T target = changer.target(targetCls);
+			Target target = changer.target(targetCls);
 			if( null == target || !targetPredicate.test(target)) continue;
 			int change = changer.amount();
 			BalanceChange targetSummary = targetSummaryMap.get(target.accountId());
@@ -49,7 +49,7 @@ public class HistoryGenerator {
 		BalanceChangeGroup nGroup = null;
 		TreeMap<Integer, BalanceChange> nChangeMap = null;
 		for( BalanceChanger changer : periodChangerList ) {
-			T target = changer.target(targetCls);
+			Target target = changer.target(targetCls);
 			if( null == target || !targetPredicate.test(target) ) continue;
 			changedTargetIdSet.add(target.accountId());
 			

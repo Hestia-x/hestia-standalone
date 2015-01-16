@@ -1,18 +1,19 @@
-package huck.hestia.db.data;
+package huck.hestia.db.memory;
 
+import huck.hestia.db.Asset;
+import huck.hestia.db.Credit;
 import huck.hestia.history.Account;
-import huck.hestia.history.BalanceChanger;
 
 import java.time.LocalDateTime;
 
-public class Credit implements BalanceChanger {
+class MemoryCredit implements Credit {
 	private int id;
-	private Slip slip;
-	private CreditCode creditCode;
+	private MemorySlip slip;
+	private MemoryCreditCode creditCode;
 	private String description;
 	private int price;
 	
-	public Credit(int id, Slip slip, CreditCode creditCode, String description, int price) {
+	public MemoryCredit(int id, MemorySlip slip, MemoryCreditCode creditCode, String description, int price) {
 		this.id = id;
 		slip(slip);
 		creditCode(creditCode);
@@ -20,53 +21,58 @@ public class Credit implements BalanceChanger {
 		price(price);
 	}
 	
+	@Override
 	public int id() {
 		return id;
 	}
 	
-	public Slip slip() {
+	@Override
+	public MemorySlip slip() {
 		return slip;
 	}
-	void slip(Slip slip) {
+	public void slip(MemorySlip slip) {
 		if( null == slip ) {
 			throw new IllegalArgumentException("slip can not be null");
 		}
 		this.slip = slip;
 	}
 	
-	public CreditCode creditCode() {
+	@Override
+	public MemoryCreditCode creditCode() {
 		return creditCode;
 	}
-	void creditCode(CreditCode creditCode) {
+	public void creditCode(MemoryCreditCode creditCode) {
 		if( null == creditCode ) {
 			throw new IllegalArgumentException("creditCode can not be null");
 		}
 		this.creditCode = creditCode;
 	}
 	
+	@Override
 	public String description() {
 		return description;
 	}
-	void description(String description) {
+	public void description(String description) {
 		if( null == description || 0 == description.trim().length() ) {
 			throw new IllegalArgumentException("description can not be null");
 		}
 		this.description = description;
 	}
 	
+	@Override
 	public int price() {
 		return price;
 	}
-	void price(int price) {
+	public void price(int price) {
 		this.price = price;
 	}
 
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends Account> T target(Class<T> cls) {
+	public <Target extends Account> Target target(Class<Target> cls) {
 		if( cls.equals(Asset.class)) {			
-			return (T)creditCode.asset();
+			return (Target)creditCode.asset();
 		} else {
 			return null;
 		}

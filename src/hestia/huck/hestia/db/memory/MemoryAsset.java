@@ -1,18 +1,19 @@
-package huck.hestia.db.data;
+package huck.hestia.db.memory;
 
-import huck.hestia.history.Account;
+import huck.hestia.db.Asset;
 
-public class Asset implements Account {
+class MemoryAsset implements Asset {
 	private int id;
 	private String name;
 	private String description;
 	
-	public Asset(int id, String name, String description) {
+	public MemoryAsset(int id, String name, String description) {
 		id(id);
 		name(name);
 		description(description);
 	}
 	
+	@Override
 	public int id() {
 		return id;
 	}
@@ -20,6 +21,7 @@ public class Asset implements Account {
 		this.id = id;
 	}
 	
+	@Override
 	public String name() {
 		return name;
 	}
@@ -30,6 +32,7 @@ public class Asset implements Account {
 		this.name = name;
 	}
 	
+	@Override
 	public String description() {
 		return description;
 	}

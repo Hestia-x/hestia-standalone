@@ -1,47 +1,61 @@
-package huck.hestia.db.data;
+package huck.hestia.db.memory;
 
+import huck.hestia.db.DebitCode;
 
-public class CreditCode {
+class MemoryDebitCode implements DebitCode {
 	private int id;
 	private String name;
-	private Asset asset;
+	private MemoryAsset asset;
 	private String defaultDescription;
 	
-	public CreditCode(int id, String name, Asset asset, String defaultDescription) {
+	public MemoryDebitCode(int id, String name, MemoryAsset asset, String defaultDescription) {
 		id(id);
 		name(name);
 		asset(asset);
 		defaultDescription(defaultDescription);
-	}	
+	}
 	
+	@Override
 	public int id() {
 		return id;
 	}
-	void id(int id) {
+	public void id(int id) {
 		this.id = id;
 	}
 	
+	@Override
 	public String name() {
 		return name;
 	}
-	void name(String name) {
+	public void name(String name) {
 		if( null == name || 0 == name.trim().length() ) {
 			throw new IllegalArgumentException("name can not be null");
 		}
 		this.name = name;
 	}
 	
-	public Asset asset() {
+	@Override
+	public MemoryAsset asset() {
 		return asset;
 	}
-	void asset(Asset asset) {
+	public void asset(MemoryAsset asset) {
 		this.asset = asset;
 	}
 	
+	@Override
 	public String defaultDescription() {
 		return defaultDescription;
 	}
-	void defaultDescription(String defaultDescription) {
+	public void defaultDescription(String defaultDescription) {
 		this.defaultDescription = defaultDescription;
+	}
+	
+	@Override
+	public int accountId() {
+		return id();
+	}
+	@Override
+	public String accountName() {
+		return name();
 	}
 }

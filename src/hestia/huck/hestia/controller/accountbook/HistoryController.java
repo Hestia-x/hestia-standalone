@@ -1,10 +1,10 @@
-package huck.hestia.controller;
+package huck.hestia.controller.accountbook;
 
 import huck.hestia.HestiaController;
 import huck.hestia.HttpUtil;
 import huck.hestia.VelocityRenderer;
+import huck.hestia.db.Asset;
 import huck.hestia.db.HestiaDB;
-import huck.hestia.db.data.Asset;
 import huck.hestia.history.AccountHistory;
 import huck.hestia.history.AccountHistory.GroupType;
 import huck.hestia.history.BalanceChangeGroup;
@@ -39,8 +39,8 @@ public class HistoryController implements HestiaController {
 			paths[paths.length-1] += "/";
 		}
 		
-		if( 2 > paths.length || paths[1] == "assets" ) {
-			return renderer.render("/AssetBalanceHistory.html", req, assets(req));	
+		if( 3 > paths.length || paths[2] == "assets" ) {
+			return renderer.render("/account_book/AssetBalanceHistory.html", req, assets(req));	
 		}
 		
 		return null;

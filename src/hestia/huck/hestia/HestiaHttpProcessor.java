@@ -1,9 +1,12 @@
 package huck.hestia;
 
+import huck.common.jdbc.DBConnectionManager;
 import huck.hestia.controller.DefaultController;
-import huck.hestia.controller.HistoryController;
 import huck.hestia.controller.StaticResourceController;
+import huck.hestia.controller.accountbook.HistoryController;
 import huck.hestia.db.HestiaDB;
+import huck.hestia.db.memory.HestiaMemoryDB;
+import huck.hestia.db.memory.LoaderMysql;
 import huck.simplehttp.HttpException;
 import huck.simplehttp.HttpProcessor;
 import huck.simplehttp.HttpRequest;
@@ -16,18 +19,24 @@ import java.util.Collections;
 import java.util.HashMap;
 
 public class HestiaHttpProcessor implements HttpProcessor {
-	private HashMap<String, HestiaController> controllerMap = new HashMap<>();
+	private HashMap<String, HestiaController> controllerMap;
 	
 	public HestiaHttpProcessor() throws IOException {
-		HestiaDB db = null;
+		String dbUrl = "jdbc:mysql://127.0.0.1:3306/account_book?characterEncoding=UTF-8";
+		String dbUser = "root";
+		String dbPassword = null;
+		HestiaDB db = new HestiaMemoryDB(new LoaderMysql(new DBConnectionManager(dbUrl, dbUser, dbPassword)));
+
 		VelocityRenderer renderer = new VelocityRenderer();
+
+		controllerMap = new HashMap<>();
 		controllerMap.put("/", new DefaultController(db, renderer));
-		controllerMap.put("/history/", new HistoryController(db, renderer));
-		
+		controllerMap.put("/account_book/history/", new HistoryController(db, renderer));
 		controllerMap.put("/css/", new StaticResourceController());
 		controllerMap.put("/fonts/", new StaticResourceController());
 		controllerMap.put("/js/", new StaticResourceController());
 	}
+	
 	
 	@Override
 	public HttpResponse process(HttpRequest req) throws HttpException, Exception {

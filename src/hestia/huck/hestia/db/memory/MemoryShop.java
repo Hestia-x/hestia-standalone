@@ -1,26 +1,30 @@
-package huck.hestia.db.data;
+package huck.hestia.db.memory;
+
+import huck.hestia.db.Shop;
 
 
-public class Shop {
+class MemoryShop implements Shop {
 	private int id;
 	private String name;
 	
-	public Shop(int id, String name) {
+	public MemoryShop(int id, String name) {
 		id(id);
 		name(name);
 	}
 	
+	@Override
 	public int id() {
 		return id;
 	}
-	void id(int id) {
+	public void id(int id) {
 		this.id = id;
 	}
 	
+	@Override
 	public String name() {
 		return name;
 	}
-	void name(String name) {
+	public void name(String name) {
 		if( null == name || 0 == name.trim().length() ) {
 			throw new IllegalArgumentException("name can not be null");
 		}

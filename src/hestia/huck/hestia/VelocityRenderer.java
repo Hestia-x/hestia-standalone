@@ -49,6 +49,7 @@ public class VelocityRenderer {
 		}
 	}
 	
+	@FunctionalInterface
 	public interface ActionFunction {
 		String apply(HttpRequest req, HashMap<String, Object> valueMap) throws Exception;
 	}

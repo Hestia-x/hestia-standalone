@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.TreeMap;
 import java.util.function.Predicate;
@@ -126,22 +127,46 @@ public class HestiaMemoryDB implements HestiaDB {
 		return Collections.unmodifiableList(result);
 	}
 	
-	public abstract static class Loader {
+	public static abstract class Dumper {
+		abstract protected void dump(HestiaMemoryDB db) throws Exception;		
+		final protected Map<Integer, MemoryAsset> assetMap(HestiaMemoryDB db) {
+			return Collections.unmodifiableMap(db.assetMap);
+		}
+		final protected Map<Integer, MemoryShop> shopMap(HestiaMemoryDB db) {
+			return Collections.unmodifiableMap(db.shopMap);
+		}
+		final protected Map<Integer, MemoryDebitCode> debitCodeMap(HestiaMemoryDB db) {
+			return Collections.unmodifiableMap(db.debitCodeMap);
+		}
+		final protected Map<Integer, MemoryCreditCode> creditCodeMap(HestiaMemoryDB db) {
+			return Collections.unmodifiableMap(db.creditCodeMap);
+		}
+		final protected Map<Integer, MemorySlip> slipMap(HestiaMemoryDB db) {
+			return Collections.unmodifiableMap(db.slipMap);
+		}
+		final protected Map<Integer, MemoryDebit> debitMap(HestiaMemoryDB db) {
+			return Collections.unmodifiableMap(db.debitMap);
+		}
+		final protected Map<Integer, MemoryCredit> creditMap(HestiaMemoryDB db) {
+			return Collections.unmodifiableMap(db.creditMap);
+		}
+	}
+	public static abstract class Loader {
 		abstract protected void load(HestiaMemoryDB db) throws Exception;
 		
-		protected final void addAsset(HestiaMemoryDB db, MemoryAsset asset) {
+		final protected void addAsset(HestiaMemoryDB db, MemoryAsset asset) {
 			if( db.assetMap.containsKey(asset.id()) ) {
 				throw new IllegalArgumentException("duplicated asset:" + asset.id());
 			}
 			db.assetMap.put(asset.id(), asset);
 		}
-		protected final void addShop(HestiaMemoryDB db, MemoryShop shop) {
+		final protected void addShop(HestiaMemoryDB db, MemoryShop shop) {
 			if( db.shopMap.containsKey(shop.id()) ) {
 				throw new IllegalArgumentException("duplicated shop:" + shop.id());
 			}
 			db.shopMap.put(shop.id(), shop);
 		}
-		protected final void addDebitCode(HestiaMemoryDB db, MemoryDebitCode debitCode) {
+		final protected void addDebitCode(HestiaMemoryDB db, MemoryDebitCode debitCode) {
 			if( db.debitCodeMap.containsKey(debitCode.id()) ) {
 				throw new IllegalArgumentException("duplicated debitCode:" + debitCode.id());
 			}
@@ -151,7 +176,7 @@ public class HestiaMemoryDB implements HestiaDB {
 			db.debitCodeMap.put(debitCode.id(), debitCode);
 			
 		}
-		protected final void addCreditCode(HestiaMemoryDB db, MemoryCreditCode creditCode) {
+		final protected void addCreditCode(HestiaMemoryDB db, MemoryCreditCode creditCode) {
 			if( db.creditCodeMap.containsKey(creditCode.id()) ) {
 				throw new IllegalArgumentException("duplicated creditCode:" + creditCode.id());
 			}
@@ -160,7 +185,7 @@ public class HestiaMemoryDB implements HestiaDB {
 			}
 			db.creditCodeMap.put(creditCode.id(), creditCode);
 		}
-		protected final void addSlip(HestiaMemoryDB db, MemorySlip slip) {
+		final protected void addSlip(HestiaMemoryDB db, MemorySlip slip) {
 			if( db.slipMap.containsKey(slip.id()) ) {
 				throw new IllegalArgumentException("duplicated slip:" + slip.id());
 			}
@@ -169,7 +194,7 @@ public class HestiaMemoryDB implements HestiaDB {
 			}
 			db.slipMap.put(slip.id(), slip);
 		}
-		protected final void addDebit(HestiaMemoryDB db, MemoryDebit debit) {
+		final protected void addDebit(HestiaMemoryDB db, MemoryDebit debit) {
 			if( db.debitMap.containsKey(debit.id()) ) {
 				throw new IllegalArgumentException("duplicated debit:" + debit.id());
 			}
@@ -182,7 +207,7 @@ public class HestiaMemoryDB implements HestiaDB {
 
 			db.debitMap.put(debit.id(), debit);
 		}
-		protected final void addCredit(HestiaMemoryDB db, MemoryCredit credit) {
+		final protected void addCredit(HestiaMemoryDB db, MemoryCredit credit) {
 			if( db.creditMap.containsKey(credit.id()) ) {
 				throw new IllegalArgumentException("duplicated asset:" + credit.id());
 			}

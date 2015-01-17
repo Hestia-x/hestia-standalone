@@ -79,7 +79,7 @@ class MemoryCredit implements Credit {
 	}
 	@Override
 	public int amount() {
-		return price;
+		return 0-price;
 	}
 	@Override
 	public int occurrenceId() {

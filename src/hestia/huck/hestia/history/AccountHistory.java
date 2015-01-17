@@ -24,21 +24,21 @@ public class AccountHistory {
 			a->a.occurrenceDttm().toLocalDate().withDayOfMonth(1)
 		)
 		;		
-		private Function<BalanceChanger, String> idExtractor;
-		private Function<BalanceChanger, String> descriptionExtractor;
-		private Function<BalanceChanger, LocalDate> localDateExtractor;
-		private GroupType(Function<BalanceChanger, String> idExtractor, Function<BalanceChanger, String> descriptionExtractor, Function<BalanceChanger, LocalDate> localDateExtractor) {
+		private Function<AccountChanger, String> idExtractor;
+		private Function<AccountChanger, String> descriptionExtractor;
+		private Function<AccountChanger, LocalDate> localDateExtractor;
+		private GroupType(Function<AccountChanger, String> idExtractor, Function<AccountChanger, String> descriptionExtractor, Function<AccountChanger, LocalDate> localDateExtractor) {
 			this.idExtractor = idExtractor;
 			this.descriptionExtractor = descriptionExtractor;
 			this.localDateExtractor = localDateExtractor;
 		}		
-		public Function<BalanceChanger, String> idExtractor() {
+		public Function<AccountChanger, String> idExtractor() {
 			return idExtractor;
 		}
-		public Function<BalanceChanger, String> descriptionExtractor() {
+		public Function<AccountChanger, String> descriptionExtractor() {
 			return descriptionExtractor;
 		}
-		public Function<BalanceChanger, LocalDate> localDateExtractor() {
+		public Function<AccountChanger, LocalDate> localDateExtractor() {
 			return localDateExtractor;
 		}
 	}

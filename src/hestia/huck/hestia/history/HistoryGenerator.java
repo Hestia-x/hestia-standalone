@@ -12,7 +12,7 @@ import java.util.TreeMap;
 import java.util.function.Predicate;
 
 public class HistoryGenerator {
-	public static <Target extends Account> AccountHistory createAccountHistory(LocalDate fromDate, LocalDate toDate, GroupType groupType, ArrayList<BalanceChanger> dataList, Class<Target> targetCls, Predicate<Target> targetPredicate) throws SQLException {
+	public static <Target extends Account> AccountHistory createAccountHistory(LocalDate fromDate, LocalDate toDate, GroupType groupType, ArrayList<AccountChanger> dataList, Class<Target> targetCls, Predicate<Target> targetPredicate) throws SQLException {
 		LocalDateTime fromDttm = fromDate.atStartOfDay().minusNanos(1);
 		LocalDateTime toDttm = toDate.plusDays(1).atStartOfDay();
 
@@ -21,15 +21,15 @@ public class HistoryGenerator {
 		}
 		// toDate 이 후 데이터는 제거.
 		// fromDate 기준으로 이전 데이터, 조회 데이터 구분.
-		ArrayList<BalanceChanger> beforeChangerList = new ArrayList<BalanceChanger>();
-		ArrayList<BalanceChanger> periodChangerList = new ArrayList<BalanceChanger>();
+		ArrayList<AccountChanger> beforeChangerList = new ArrayList<AccountChanger>();
+		ArrayList<AccountChanger> periodChangerList = new ArrayList<AccountChanger>();
 		dataList.stream()
 			.filter(a -> a.occurrenceDttm().isBefore(toDttm))
 			.forEach(a -> (a.occurrenceDttm().isAfter(fromDttm)?periodChangerList:beforeChangerList).add(a));
 
 		// 조회 기간 이전 데이터로 account별 요약표 작성.
 		TreeMap<Integer, BalanceChange> targetSummaryMap = new TreeMap<>(); // accountId -> price
-		for( BalanceChanger changer : beforeChangerList ) {
+		for( AccountChanger changer : beforeChangerList ) {
 			Target target = changer.target(targetCls);
 			if( null == target || !targetPredicate.test(target)) continue;
 			int change = changer.amount();
@@ -43,12 +43,12 @@ public class HistoryGenerator {
 		}
 
 		// 조회 기간 데이터는 시간 기준으로 정렬 후 Group에 맞춰 account별 변동 데이터 작성. 
-		periodChangerList.sort(Comparator.comparing(BalanceChanger::occurrenceDttm).thenComparing(BalanceChanger::occurrenceId));
+		periodChangerList.sort(Comparator.comparing(AccountChanger::occurrenceDttm).thenComparing(AccountChanger::occurrenceId));
 		ArrayList<BalanceChangeGroup> changeGroupList = new ArrayList<>();
 		HashSet<Integer> changedTargetIdSet = new HashSet<>();
 		BalanceChangeGroup nGroup = null;
 		TreeMap<Integer, BalanceChange> nChangeMap = null;
-		for( BalanceChanger changer : periodChangerList ) {
+		for( AccountChanger changer : periodChangerList ) {
 			Target target = changer.target(targetCls);
 			if( null == target || !targetPredicate.test(target) ) continue;
 			changedTargetIdSet.add(target.accountId());

@@ -2,7 +2,7 @@ package huck.hestia.history;
 
 import java.time.LocalDateTime;
 
-public interface BalanceChanger {
+public interface AccountChanger {
 	public <Target extends Account> Target target(Class<Target> cls);
 	
 	public int occurrenceId();

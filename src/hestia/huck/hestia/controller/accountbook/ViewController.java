@@ -13,7 +13,7 @@ import huck.hestia.db.Slip;
 import huck.hestia.history.AccountHistory;
 import huck.hestia.history.AccountHistory.GroupType;
 import huck.hestia.history.BalanceChangeGroup;
-import huck.hestia.history.BalanceChanger;
+import huck.hestia.history.AccountChanger;
 import huck.hestia.history.HistoryGenerator;
 import huck.simplehttp.HttpRequest;
 import huck.simplehttp.HttpResponse;
@@ -122,10 +122,10 @@ public class ViewController implements HestiaController {
 			toDate = tmp;
 		}
 		
-		ArrayList<BalanceChanger> allBalanceChangerList = new ArrayList<>();
-		allBalanceChangerList.addAll(db.retrieveCreditList(null));
-		allBalanceChangerList.addAll(db.retrieveDebitList(null));			
-		AccountHistory history = HistoryGenerator.createAccountHistory(fromDate, toDate, groupType, allBalanceChangerList, Asset.class, assetPredicate);
+		ArrayList<AccountChanger> allAccountChanger = new ArrayList<>();
+		allAccountChanger.addAll(db.retrieveCreditList(null));
+		allAccountChanger.addAll(db.retrieveDebitList(null));			
+		AccountHistory history = HistoryGenerator.createAccountHistory(fromDate, toDate, groupType, allAccountChanger, Asset.class, assetPredicate);
 		HashMap<LocalDate, AtomicInteger> dateGroupCountMap = new HashMap<>();
 		for( BalanceChangeGroup groupData : history.getBalanceChangeGroupList() ) {
 			dateGroupCountMap.putIfAbsent(groupData.getDate(), new AtomicInteger(0));

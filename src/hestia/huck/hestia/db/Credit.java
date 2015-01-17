@@ -1,11 +1,11 @@
 package huck.hestia.db;
 
 import huck.hestia.history.Account;
-import huck.hestia.history.BalanceChanger;
+import huck.hestia.history.AccountChanger;
 
 import java.time.LocalDateTime;
 
-public interface Credit extends BalanceChanger {
+public interface Credit extends AccountChanger {
 	public int id();
 	public Slip slip();
 	public CreditCode creditCode();

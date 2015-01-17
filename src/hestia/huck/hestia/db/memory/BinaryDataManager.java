@@ -1,13 +1,8 @@
 package huck.hestia.db.memory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.time.LocalDateTime;
@@ -16,17 +11,15 @@ import java.util.TreeMap;
 import java.util.function.BiConsumer;
 
 
-public class BinaryDataManager {
-	private File file;
-	public BinaryDataManager(File file) {
-		this.file = file;
-	}
+public abstract class BinaryDataManager {
+	abstract protected ReadableByteChannel getReadableByteChannel() throws Exception;
+	abstract protected WritableByteChannel getWritableByteChannel() throws Exception;
 	
-	public HestiaMemoryDB.Loader getLoader() throws FileNotFoundException {
-		return new Loader(Channels.newChannel(new FileInputStream(file)));
+	public HestiaMemoryDB.Loader getLoader() throws Exception {
+		return new Loader(getReadableByteChannel());
 	}
-	public HestiaMemoryDB.Dumper getDumper() throws FileNotFoundException {
-		return new Dumper(Channels.newChannel(new FileOutputStream(file)));
+	public HestiaMemoryDB.Dumper getDumper() throws Exception {
+		return new Dumper(getWritableByteChannel());
 	}
 	
 	@FunctionalInterface
@@ -35,7 +28,7 @@ public class BinaryDataManager {
 	}
 	@FunctionalInterface
 	interface WriteFunction<Data> {
-	    Data apply(ByteBuffer buf, Data data) throws Exception;
+	    void apply(ByteBuffer buf, Data data) throws Exception;
 	}
 	
 	private static class Dumper extends HestiaMemoryDB.Dumper {
@@ -58,29 +51,80 @@ public class BinaryDataManager {
 			try {
 				ByteBuffer buf = ByteBuffer.allocate(1024);
 				for( MemoryAsset asset : assetMap(db).values() ) {
-					write(buf, (short)101, asset.id(), asset, null);
+					write(buf, (short)101, asset.id(), asset, this::asset);
 				}
 				for( MemoryShop shop : shopMap(db).values() ) {
-					write(buf, (short)102, shop.id(), shop, null);
+					write(buf, (short)102, shop.id(), shop, this::shop);
 				}
 				for( MemoryDebitCode debitCode : debitCodeMap(db).values() ) {
-					write(buf, (short)103, debitCode.id(), debitCode, null);
+					write(buf, (short)103, debitCode.id(), debitCode, this::debitCode);
 				}
 				for( MemoryCreditCode creditCode : creditCodeMap(db).values() ) {
-					write(buf, (short)104, creditCode.id(), creditCode, null);
+					write(buf, (short)104, creditCode.id(), creditCode, this::creditCode);
 				}
 				for( MemorySlip slip : slipMap(db).values() ) {
-					write(buf, (short)105, slip.id(), slip, null);
+					write(buf, (short)105, slip.id(), slip, this::slip);
 				}
 				for( MemoryDebit debit : debitMap(db).values() ) {
-					write(buf, (short)106, debit.id(), debit, null);
+					write(buf, (short)106, debit.id(), debit, this::debit);
 				}
 				for( MemoryCredit credit : creditMap(db).values() ) {
-					write(buf, (short)107, credit.id(), credit, null);
+					write(buf, (short)107, credit.id(), credit, this::credit);
 				}
 			} finally {
 				output.close();
 			}
+		}
+		private static void putString(ByteBuffer buf, String str) throws UnsupportedEncodingException {
+			if( null == str ) {
+				buf.putShort((short)0);
+			} else {
+				byte[] tmp = str.getBytes("UTF-8");
+				buf.putShort((short)tmp.length);
+				buf.put(tmp);
+			}
+		}
+		private void asset(ByteBuffer buf, MemoryAsset asset) throws UnsupportedEncodingException {
+			putString(buf, asset.name());
+			putString(buf, asset.description());
+		}
+		private void shop(ByteBuffer buf, MemoryShop shop) throws UnsupportedEncodingException {
+			putString(buf, shop.name());
+		}
+		private void debitCode(ByteBuffer buf, MemoryDebitCode debitCode) throws UnsupportedEncodingException {
+			putString(buf, debitCode.name());
+			if( null == debitCode.asset() ) {
+				buf.putInt(-1);
+			} else {
+				buf.putInt(debitCode.asset().id());
+			}
+			putString(buf, debitCode.defaultDescription());
+		}
+		private void creditCode(ByteBuffer buf, MemoryCreditCode creditCode) throws UnsupportedEncodingException {
+			putString(buf, creditCode.name());
+			if( null == creditCode.asset() ) {
+				buf.putInt(-1);
+			} else {
+				buf.putInt(creditCode.asset().id());
+			}
+			putString(buf, creditCode.defaultDescription());
+		}
+		private void slip(ByteBuffer buf, MemorySlip slip) throws UnsupportedEncodingException {
+			putString(buf, slip.slipDttm().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+			buf.putInt(slip.shop().id());
+		}
+		private void debit(ByteBuffer buf, MemoryDebit debit) throws UnsupportedEncodingException {
+			buf.putInt(debit.slip().id());
+			buf.putInt(debit.debitCode().id());
+			putString(buf, debit.description());
+			buf.putInt(debit.unitPrice());
+			buf.putInt(debit.quantity());
+		}
+		private void credit(ByteBuffer buf, MemoryCredit credit) throws UnsupportedEncodingException {
+			buf.putInt(credit.slip().id());
+			buf.putInt(credit.creditCode().id());
+			putString(buf, credit.description());
+			buf.putInt(credit.price());
 		}
 	}
 	
@@ -111,7 +155,8 @@ public class BinaryDataManager {
 				ByteBuffer buf = ByteBuffer.allocate(1024);
 				buf.clear();
 				
-				boolean finished = false;			
+				boolean finished = false;
+				read:
 				while( !finished ) {				
 					int readLen = source.read(buf);
 					if( 0 > readLen ) {
@@ -132,26 +177,28 @@ public class BinaryDataManager {
 							case 106: add(db, type, id, buf, this::debit, this::addDebit, debitMap); break;
 							case 107: add(db, type, id, buf, this::credit, this::addCredit, creditMap); break;
 							}
-							buf.clear();
 						} catch( BufferUnderflowException ex) {
 							if( !finished ) {
 								buf.position(startPos);
 								buf.compact();
+								continue read;
 							}
 						}
 					}
+					buf.clear();
 				}
 			} finally {
 				source.close();
 			}
 		}
 		private static String getString(ByteBuffer buf) throws UnsupportedEncodingException {
-			int len = buf.getShort();
+			short len = buf.getShort();
 			if( 0 == len ) return null;
 			byte[] data = new byte[len];
 			buf.get(data);
 			return new String(data, "UTF-8");
 		}
+
 		private MemoryAsset asset(short type, int id, ByteBuffer buf) throws UnsupportedEncodingException {
 			String name = getString(buf);
 			String description = getString(buf);

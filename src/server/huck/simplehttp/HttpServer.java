@@ -78,7 +78,7 @@ public class HttpServer {
 								currentConnectionCnt -= 1;
 							}
 						} catch( Exception ex ) {
-							ex.printStackTrace();
+							Logger.getLogger("http").fatal(ex, ex);
 							key.cancel();
 							key.channel().close();
 							

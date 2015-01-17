@@ -103,6 +103,10 @@ public class HestiaMemoryDB implements HestiaDB {
 		loader.load(this);
 	}
 	
+	public void dump(Dumper dumper) throws Exception {
+		dumper.dump(this);
+	}
+	
 	// definitions
 	private TreeMap<Integer, MemoryAsset> assetMap;
 	private TreeMap<Integer, MemoryShop> shopMap;

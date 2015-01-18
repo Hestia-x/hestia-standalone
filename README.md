@@ -35,4 +35,5 @@ finance manager for family
   * /account_book/config/shop
   * /account_book/config/debit_code
   * /account_book/config/credit_code
-  * /account_book/config/budget
+  * /account_book/config/budget_months
+  * /account_book/config/budget/${year}_${month}

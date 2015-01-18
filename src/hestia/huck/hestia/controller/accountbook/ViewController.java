@@ -48,7 +48,7 @@ public class ViewController implements HestiaController {
 		switch( path.get(0) ) {
 		case "assets": actionFunction = this::assets; break;
 		case "asset/": actionFunction =  this::asset; break;
-		case "slip": actionFunction =  this::slip; break;
+		case "slip/": actionFunction =  this::slip; break;
 		default: actionFunction = null;
 		}
 		if( null == actionFunction ) {

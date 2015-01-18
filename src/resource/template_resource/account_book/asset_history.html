@@ -1,6 +1,6 @@
 <html>
 <head>
-	<title>BalanceHistory</title>
+	<title>Asset History</title>
 	<style>
 		table {
 			border-collapse: collapse;
@@ -87,7 +87,9 @@
 					#set($firstSlip = true)
 				#end
 			#if( $history.groupType == "OCCURRENCE" )
-			<td class="#if($firstDate)top_thick #end #if($firstSlip)top_medium #end right_thick" rowspan="$groupData.balanceChangeList.size()">$groupData.description ($groupData.id)</td>
+			<td class="#if($firstDate)top_thick #end #if($firstSlip)top_medium #end right_thick" rowspan="$groupData.balanceChangeList.size()">
+				<a href="slip/$groupData.id">$groupData.description ($groupData.id)</a>
+			</td>
 			#end
 			#end
 			<td class="#if($firstDate)top_thick #end #if($firstSlip)top_medium #end">$changeData.accountName</td>			

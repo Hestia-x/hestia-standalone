@@ -18,3 +18,21 @@ finance manager for family
 * slip: 전표. 한 상점에서 한번에 구매한 내역 모음. 
   * debit list와 credit list를 가지고 있음.
   * 원칙적으로는 debit의 총합과 credit의 총합이 같아야 하지만(대차평형 원리) 여기서는 깔끔히 무시함.
+  
+
+### 구현 된 URL
+* /account_book/view/assets
+* /account_book/view/asset/${assetId}
+* /account_book/view/slip/${slipId}
+
+### 구현 할 URL
+* view
+  * /account_book/view/budget/${year}_${month}
+* update - GET이면 form, POST면 update. 데이터가 잘못 되었으면 form + 메세지.
+  * /account_book/edit/slip/${slipId}
+  * /account_book/add/slip
+  * /account_book/config/asset
+  * /account_book/config/shop
+  * /account_book/config/debit_code
+  * /account_book/config/credit_code
+  * /account_book/config/budget

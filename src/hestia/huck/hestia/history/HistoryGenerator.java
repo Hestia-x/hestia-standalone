@@ -8,11 +8,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.TreeMap;
 import java.util.function.Predicate;
 
 public class HistoryGenerator {
-	public static <Target extends Account> AccountHistory createAccountHistory(LocalDate fromDate, LocalDate toDate, GroupType groupType, ArrayList<AccountChanger> dataList, Class<Target> targetCls, Predicate<Target> targetPredicate) throws SQLException {
+	public static <Target extends Account> AccountHistory createAccountHistory(LocalDate fromDate, LocalDate toDate, GroupType groupType, List<? extends AccountChanger> dataList, Class<Target> targetCls, Predicate<Target> targetPredicate) throws SQLException {
 		LocalDateTime fromDttm = fromDate.atStartOfDay().minusNanos(1);
 		LocalDateTime toDttm = toDate.plusDays(1).atStartOfDay();
 

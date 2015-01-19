@@ -1,31 +1,28 @@
 package huck.hestia.controller.accountbook;
 
 import huck.hestia.HestiaController;
-import huck.hestia.HttpUtil;
 import huck.hestia.RequestPath;
 import huck.hestia.VelocityRenderer;
 import huck.hestia.VelocityRenderer.ActionFunction;
-import huck.hestia.db.Asset;
 import huck.hestia.db.Credit;
+import huck.hestia.db.CreditCode;
 import huck.hestia.db.Debit;
+import huck.hestia.db.DebitCode;
 import huck.hestia.db.HestiaDB;
 import huck.hestia.db.Slip;
 import huck.hestia.history.AccountHistory;
 import huck.hestia.history.AccountHistory.GroupType;
-import huck.hestia.history.BalanceChangeGroup;
-import huck.hestia.history.AccountChanger;
 import huck.hestia.history.HistoryGenerator;
 import huck.simplehttp.HttpRequest;
 import huck.simplehttp.HttpResponse;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.IntSummaryStatistics;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class ViewController implements HestiaController {
@@ -42,13 +39,13 @@ public class ViewController implements HestiaController {
 		RequestPath path = new RequestPath(req.getRequestPath().substring(matchPath.length()));
 		req.setAttribute("path", path);
 		if( 0 == path.size() ) {
-			return redirectTo(matchPath + "assets");
+			return redirectTo(matchPath + "asset/");
 		}
 		ActionFunction actionFunction;
 		switch( path.get(0) ) {
-		case "assets": actionFunction = this::assets; break;
-		case "asset/": actionFunction =  this::asset; break;
 		case "slip/": actionFunction =  this::slip; break;
+		case "cashflow": actionFunction =  this::cashflowMain; break;
+		case "cashflow/": actionFunction =  this::cashflowDetail; break;
 		default: actionFunction = null;
 		}
 		if( null == actionFunction ) {
@@ -58,18 +55,6 @@ public class ViewController implements HestiaController {
 		
 	}
 	
-	private String assets(HttpRequest req, HashMap<String, Object> valueMap) throws Exception {
-		return assetHistory(req, valueMap, a->true);
-	}
-	private String asset(HttpRequest req, HashMap<String, Object> valueMap) throws Exception {
-		RequestPath path = (RequestPath)req.getAttribute("path");
-		int assetId = path.getInt(1, Integer.MIN_VALUE);
-		if( !db.retrieveAssetList(a->a.id()==assetId).isEmpty() ) {
-			return assetHistory(req, valueMap, a->a.id()==assetId);	
-		}
-		notFound(req);
-		return null;
-	}
 	private String slip(HttpRequest req, HashMap<String, Object> valueMap) throws Exception {
 		RequestPath path = (RequestPath)req.getAttribute("path");
 		Integer slipId = path.getInt(1, Integer.MIN_VALUE);
@@ -88,54 +73,26 @@ public class ViewController implements HestiaController {
 		valueMap.put("creditSummary", creditSummary);
 		return "/account_book/slip.html";
 	}
-	
-	private String assetHistory(HttpRequest req, HashMap<String, Object> valueMap, Predicate<Asset> assetPredicate) throws Exception {
-		LocalDate fromDate = HttpUtil.getLocalDate(req, "from", false);
-		LocalDate toDate = HttpUtil.getLocalDate(req, "to", false);
-		LocalDate today = LocalDate.now();
-		String groupTypeStr = HttpUtil.getString(req, "group", false);
-		GroupType groupType = GroupType.OCCURRENCE;
+	private String cashflowMain(HttpRequest req, HashMap<String, Object> valueMap) throws Exception {
+		return null;
+	}
+	private String cashflowDetail(HttpRequest req, HashMap<String, Object> valueMap) throws Exception {
+		RequestPath path = (RequestPath)req.getAttribute("path");
+		String yearMonth = path.get(1);
+		LocalDate beginDate = null;
 		try {
-			groupType = GroupType.valueOf(groupTypeStr);
-		} catch( Exception ignore ) {
+			beginDate = LocalDate.parse(yearMonth.replace('_', '-') + "-01", DateTimeFormatter.ISO_DATE);
+		} catch( DateTimeParseException ex ) {
+			notFound(req);
 		}
-		
-		//  기준 되는 LocalDateTime 생성.
-		if( null == toDate ) {
-			toDate = today;
-		}
-		if( null == fromDate ) {
-			if( groupType == GroupType.MONTH ) {
-				LocalDate a = toDate.minusMonths(3);
-				LocalDate b = today.withDayOfYear(1);
-				fromDate = a.isBefore(b) ? a : b;
-			} else {
-				LocalDate a = toDate.minusDays(5);
-				LocalDate b = today.withDayOfMonth(1);
-				fromDate = a.isBefore(b) ? a : b;
-			}
-			
-		}
-		if( fromDate.isAfter(toDate) ) {
-			LocalDate tmp = fromDate;
-			fromDate = toDate;
-			toDate = tmp;
-		}
-		
-		ArrayList<AccountChanger> allAccountChanger = new ArrayList<>();
-		allAccountChanger.addAll(db.retrieveCreditList(null));
-		allAccountChanger.addAll(db.retrieveDebitList(null));			
-		AccountHistory history = HistoryGenerator.createAccountHistory(fromDate, toDate, groupType, allAccountChanger, Asset.class, assetPredicate);
-		HashMap<LocalDate, AtomicInteger> dateGroupCountMap = new HashMap<>();
-		for( BalanceChangeGroup groupData : history.getBalanceChangeGroupList() ) {
-			dateGroupCountMap.putIfAbsent(groupData.getDate(), new AtomicInteger(0));
-			AtomicInteger cnt = dateGroupCountMap.get(groupData.getDate());
-			cnt.addAndGet(groupData.getBalanceChangeList().size());
-		}
-		
-		valueMap.put("history", history);
-		valueMap.put("dateGroupCountMap", dateGroupCountMap);
-		return "/account_book/asset_history.html";
+		LocalDate endDate = beginDate.plusMonths(1).minusDays(1);
+		List<Debit> debitList = db.retrieveDebitList(null);
+		List<Credit> creditList = db.retrieveCreditList(null);
+		AccountHistory income = HistoryGenerator.createAccountHistory(beginDate, endDate, GroupType.MONTH, creditList, CreditCode.class, a->null!=a.asset());
+		AccountHistory outcome = HistoryGenerator.createAccountHistory(beginDate, endDate, GroupType.MONTH, debitList, DebitCode.class, a->null!=a.asset());
+		valueMap.put("income", income);
+		valueMap.put("outcome", outcome);
+		return "/account_book/cashflow.html";
 	}
 }
 

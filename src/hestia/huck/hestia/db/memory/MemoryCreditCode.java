@@ -50,4 +50,13 @@ class MemoryCreditCode implements CreditCode {
 	public void defaultDescription(String defaultDescription) {
 		this.defaultDescription = defaultDescription;
 	}
+	
+	@Override
+	public int accountId() {
+		return id();
+	}
+	@Override
+	public String accountName() {
+		return name();
+	}
 }

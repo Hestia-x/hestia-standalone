@@ -2,6 +2,7 @@ package huck.hestia.db.memory;
 
 import huck.hestia.db.Asset;
 import huck.hestia.db.Debit;
+import huck.hestia.db.DebitCode;
 import huck.hestia.history.Account;
 
 import java.time.LocalDateTime;
@@ -83,6 +84,8 @@ class MemoryDebit implements Debit {
 	public <Target extends Account> Target target(Class<Target> cls) {
 		if( cls.equals(Asset.class)) {			
 			return (Target)debitCode.asset();
+		} else if( cls.equals(DebitCode.class)) {			
+			return (Target)debitCode;
 		} else {
 			return null;
 		}

@@ -2,6 +2,7 @@ package huck.hestia.db.memory;
 
 import huck.hestia.db.Asset;
 import huck.hestia.db.Credit;
+import huck.hestia.db.CreditCode;
 import huck.hestia.history.Account;
 
 import java.time.LocalDateTime;
@@ -73,6 +74,8 @@ class MemoryCredit implements Credit {
 	public <Target extends Account> Target target(Class<Target> cls) {
 		if( cls.equals(Asset.class)) {			
 			return (Target)creditCode.asset();
+		} else if( cls.equals(CreditCode.class)) {			
+			return (Target)creditCode;
 		} else {
 			return null;
 		}

@@ -24,11 +24,13 @@ finance manager for family
 * /account_book/view/asset/
 * /account_book/view/asset/${assetId}
 * /account_book/view/slip/${slipId}
-
+* /account_book/view/cashflow/${year}_${month}/
+* /account_book/view/cashflow/${year}_${month}/debit/${debit_code_id}
+* /account_book/view/cashflow/${year}_${month}/credit/${credit_code_id}
+  * 음수 표기는 수정해야 함.
 ### 구현 할 URL
 * view
   * /account_book/view/cashflow/
-  * /account_book/view/cashflow/${year}_${month}
   * /account_book/view/budget/${year}_${month}
 * update - GET이면 form, POST면 update. 데이터가 잘못 되었으면 form + 메세지.
   * /account_book/edit/slip/${slipId}

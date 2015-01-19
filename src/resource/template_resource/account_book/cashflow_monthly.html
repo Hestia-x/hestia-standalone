@@ -1,0 +1,72 @@
+<html>
+<head>
+	<title>Cashflow</title>
+	<style>
+		table {
+			border-collapse: collapse;
+			border: 4px #555555 solid;
+		}
+		thead, tfoot {
+			border: 4px #555555 solid;
+		}
+		td, th {
+			margin: 0px 0px 0px 0px;
+			padding: 10px;
+			text-align:right;
+			border: 1px #555555 solid
+		}
+		.right_thick {
+			border-right-width: 4px;
+		}
+	</style>
+</head>
+<body>
+<strong>Data:</strong> $income.fromDate ~ $income.toDate
+<br/><br/>
+<table>
+	<thead>
+		<tr>
+			<th class="right_thick">Name</th>
+			<th>Sum</th>
+		</tr>
+	</thead>
+	<tbody>
+		#foreach( $accountChangeSummary in $income.balanceChangeSummaryMap.values() )
+		<tr>
+			<td class="right_thick"><a href="./credit/$accountChangeSummary.accountId">$accountChangeSummary.accountName</a></td>
+			<td>$accountChangeSummary.change</td>
+		</tr>
+		#end
+	</tbody>
+	<tfoot>
+		<tr>
+			<td class="right_thick">$income.balanceChangeSummary.accountName</td>
+			<td>$income.balanceChangeSummary.change</td>
+		</tr>
+	</tfoot>
+</table>
+<br/><br/>
+<table>
+	<thead>
+		<tr>
+			<th class="right_thick">Name</th>
+			<th>Sum</th>
+		</tr>
+	</thead>
+	<tbody>
+		#foreach( $accountChangeSummary in $outcome.balanceChangeSummaryMap.values() )
+		<tr>
+			<td class="right_thick"><a href="./debit/$accountChangeSummary.accountId">$accountChangeSummary.accountName</a></td>
+			<td>$accountChangeSummary.change</td>
+		</tr>
+		#end
+	</tbody>
+	<tfoot>
+		<tr>
+			<td class="right_thick">$outcome.balanceChangeSummary.accountName</td>
+			<td>$outcome.balanceChangeSummary.change</td>
+		</tr>
+	</tfoot>
+</table>
+</body>
+</html>

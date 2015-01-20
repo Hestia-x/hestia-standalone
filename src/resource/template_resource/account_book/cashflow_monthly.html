@@ -21,7 +21,7 @@
 	</style>
 </head>
 <body>
-<strong>Data:</strong> $income.fromDate ~ $income.toDate
+<strong>Data:</strong> $from ~ $to
 <br/><br/>
 <table>
 	<thead>
@@ -31,17 +31,18 @@
 		</tr>
 	</thead>
 	<tbody>
-		#foreach( $accountChangeSummary in $income.balanceChangeSummaryMap.values() )
+		#foreach( $change in $income.balanceChangeList )
 		<tr>
-			<td class="right_thick"><a href="./credit/$accountChangeSummary.accountId">$accountChangeSummary.accountName</a></td>
-			<td>$accountChangeSummary.change</td>
+			<td class="right_thick"><a href="./credit/$change.accountId">$change.accountName</a></td>
+			<td>$change.change</td>
 		</tr>
 		#end
 	</tbody>
 	<tfoot>
 		<tr>
-			<td class="right_thick">$income.balanceChangeSummary.accountName</td>
-			<td>$income.balanceChangeSummary.change</td>
+			#set( $changeSummary = $income.summary )
+			<td class="right_thick">$changeSummary.accountName</td>
+			<td>$changeSummary.change</td>
 		</tr>
 	</tfoot>
 </table>
@@ -54,17 +55,18 @@
 		</tr>
 	</thead>
 	<tbody>
-		#foreach( $accountChangeSummary in $outcome.balanceChangeSummaryMap.values() )
+		#foreach( $change in $outcome.balanceChangeList )
 		<tr>
-			<td class="right_thick"><a href="./debit/$accountChangeSummary.accountId">$accountChangeSummary.accountName</a></td>
-			<td>$accountChangeSummary.change</td>
+			<td class="right_thick"><a href="./debit/$change.accountId">$change.accountName</a></td>
+			<td>$change.change</td>
 		</tr>
 		#end
 	</tbody>
 	<tfoot>
 		<tr>
-			<td class="right_thick">$outcome.balanceChangeSummary.accountName</td>
-			<td>$outcome.balanceChangeSummary.change</td>
+			#set( $changeSummary = $outcome.summary )
+			<td class="right_thick">$changeSummary.accountName</td>
+			<td>$changeSummary.change</td>
 		</tr>
 	</tfoot>
 </table>

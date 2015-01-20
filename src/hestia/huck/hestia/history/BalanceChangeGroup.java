@@ -1,13 +1,13 @@
 package huck.hestia.history;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.List;
 
 public class BalanceChangeGroup {
 	private String id;
 	private LocalDate date;
 	private String description;	
-	private ArrayList<BalanceChange> balanceChangeList;
+	private List<BalanceChange> balanceChangeList;
 	
 	public String getId() {
 		return id;
@@ -30,10 +30,24 @@ public class BalanceChangeGroup {
 		this.description = description;
 	}
 	
-	public ArrayList<BalanceChange> getBalanceChangeList() {
+	public List<BalanceChange> getBalanceChangeList() {
 		return balanceChangeList;
 	}
-	public void setBalanceChangeList(ArrayList<BalanceChange> balanceChangeList) {
+	public void setBalanceChangeList(List<BalanceChange> balanceChangeList) {
 		this.balanceChangeList = balanceChangeList;
+	}
+	
+	public BalanceChange getSummary() {
+		int beforeSum = 0;
+		int changeSum = 0;
+		int balanceSum = 0;
+		if( null != balanceChangeList ) {
+			for( BalanceChange data : balanceChangeList ) {
+				beforeSum += data.getBefore();
+				changeSum += data.getChange();
+				balanceSum += data.getBalance();
+			}
+		}
+		return new BalanceChange(-1, "Summary", beforeSum, changeSum, balanceSum);
 	}
 }

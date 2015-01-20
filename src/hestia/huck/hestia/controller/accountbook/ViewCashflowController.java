@@ -65,8 +65,10 @@ public class ViewCashflowController implements HestiaController {
 		LocalDate endDate = beginDate.plusMonths(1).minusDays(1);
 		List<Debit> debitList = db.retrieveDebitList(null);
 		List<Credit> creditList = db.retrieveCreditList(null);
-		AccountHistory income = HistoryGenerator.createAccountHistory(beginDate, endDate, GroupType.MONTH, creditList, CreditCode.class, a->null==a.asset());
-		AccountHistory outcome = HistoryGenerator.createAccountHistory(beginDate, endDate, GroupType.MONTH, debitList, DebitCode.class, a->null==a.asset());
+		BalanceChangeGroup income = HistoryGenerator.createAccountHistory(beginDate, endDate, GroupType.MONTH, creditList, CreditCode.class, a->null==a.asset()).getBalanceChangeSummary();
+		BalanceChangeGroup outcome = HistoryGenerator.createAccountHistory(beginDate, endDate, GroupType.MONTH, debitList, DebitCode.class, a->null==a.asset()).getBalanceChangeSummary();
+		valueMap.put("from", beginDate);
+		valueMap.put("to", endDate);
 		valueMap.put("income", income);
 		valueMap.put("outcome", outcome);
 		return "/account_book/cashflow_monthly.html";
@@ -103,6 +105,8 @@ public class ViewCashflowController implements HestiaController {
 			AtomicInteger cnt = dateGroupCountMap.get(groupData.getDate());
 			cnt.addAndGet(groupData.getBalanceChangeList().size());
 		}
+		valueMap.put("from", beginDate);
+		valueMap.put("to", endDate);
 		valueMap.put("history", history);
 		valueMap.put("dateGroupCountMap", dateGroupCountMap);
 		return "/account_book/cashflow_monthly_detail.html";

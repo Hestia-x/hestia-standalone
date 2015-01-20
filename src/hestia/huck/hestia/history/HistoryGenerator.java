@@ -99,24 +99,19 @@ public class HistoryGenerator {
 			targetSummaryMap.remove(accountId);
 		}
 		
-		// Account 전체 요약표.
-		int beforeSum = 0;
-		int changeSum = 0;
-		int balanceSum = 0;
-		for( BalanceChange data : targetSummaryMap.values() ) {
-			beforeSum += data.getBefore();
-			changeSum += data.getChange();
-			balanceSum += data.getBalance();
-		}
-		BalanceChange summary = new BalanceChange(-1, "Summary", beforeSum, changeSum, balanceSum);
+
+		BalanceChangeGroup summaryGroup = new BalanceChangeGroup();
+		summaryGroup.setId("summary");
+		summaryGroup.setDescription("summary");
+		summaryGroup.setDate(fromDate);
+		summaryGroup.setBalanceChangeList(new ArrayList<BalanceChange>(targetSummaryMap.values()));
 		
 		// 결과 리턴.
 		AccountHistory result = new AccountHistory();
 		result.setFromDate(fromDate);
 		result.setToDate(toDate);
 		result.setGroupType(groupType);
-		result.setBalanceChangeSummaryMap(targetSummaryMap);
-		result.setBalanceChangeSummary(summary);
+		result.setBalanceChangeSummary(summaryGroup);
 		result.setBalanceChangeGroupList(changeGroupList);
 		return result;
 	}

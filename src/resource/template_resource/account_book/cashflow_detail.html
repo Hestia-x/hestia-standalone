@@ -31,10 +31,10 @@
 		</tr>
 	</thead>
 	<tbody>
-		#foreach( $accountChangeSummary in $income.balanceChangeSummaryMap.values() )
+		#foreach( $accountChange in $income.balanceChangeSummary.balanceChangeList )
 		<tr>
-			<td class="right_thick">$accountChangeSummary.accountName</td>
-			<td>$accountChangeSummary.change</td>
+			<td class="right_thick">$accountChange.accountName</td>
+			<td>$accountChange.change</td>
 		</tr>
 		#end
 	</tbody>

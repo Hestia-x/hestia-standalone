@@ -3,7 +3,6 @@ package huck.hestia.history;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.TreeMap;
 import java.util.function.Function;
 
 public class AccountHistory {
@@ -46,8 +45,7 @@ public class AccountHistory {
 	private GroupType groupType;
 	private LocalDate fromDate;
 	private LocalDate toDate;
-	private TreeMap<Integer, BalanceChange> balanceChangeSummaryMap;
-	private BalanceChange balanceChangeSummary;
+	private BalanceChangeGroup balanceChangeSummary;
 	private ArrayList<BalanceChangeGroup> balanceChangeGroupList;
 
 	public GroupType getGroupType() {
@@ -71,18 +69,11 @@ public class AccountHistory {
 		this.toDate = toDate;
 	}
 
-	public BalanceChange getBalanceChangeSummary() {
+	public BalanceChangeGroup getBalanceChangeSummary() {
 		return balanceChangeSummary;
 	}
-	public void setBalanceChangeSummary(BalanceChange balanceChangeSummary) {
+	public void setBalanceChangeSummary(BalanceChangeGroup balanceChangeSummary) {
 		this.balanceChangeSummary = balanceChangeSummary;
-	}
-	
-	public TreeMap<Integer, BalanceChange> getBalanceChangeSummaryMap() {
-		return balanceChangeSummaryMap;
-	}
-	public void setBalanceChangeSummaryMap(TreeMap<Integer, BalanceChange> balanceChangeSummaryMap) {
-		this.balanceChangeSummaryMap = balanceChangeSummaryMap;
 	}
 	
 	public ArrayList<BalanceChangeGroup> getBalanceChangeGroupList() {

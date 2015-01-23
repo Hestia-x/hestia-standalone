@@ -34,13 +34,15 @@ public class HestiaHttpProcessor implements HttpProcessor {
 		String dbUser = "root";
 		String dbPassword = null;
 		HestiaDB db = new HestiaMemoryDB(new LoaderMysql(new DBConnectionManager(dbUrl, dbUser, dbPassword)));
+		
+		int moneyScale = 2;
 
 //		FileDataManager dataMgr = new FileDataManager(new File("test.data"));
 //		HestiaDB db = new HestiaMemoryDB(dataMgr.getLoader());
 		
 		logger().info("Finish Loading");
 		
-		VelocityRenderer renderer = new VelocityRenderer();
+		VelocityRenderer renderer = new VelocityRenderer(moneyScale);
 
 		controllerMap = new HashMap<>();
 		controllerMap.put("/", new DefaultController(db));

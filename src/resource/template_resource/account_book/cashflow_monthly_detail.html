@@ -41,7 +41,7 @@
 		#foreach( $accountChange in $history.balanceChangeSummary.balanceChangeList )
 		<tr>
 			<td class="right_thick">$accountChange.accountName</td>
-			<td>$accountChange.change</td>
+			<td>$__money.f($accountChange.change)</td>
 		</tr>
 		#end
 	</tbody>
@@ -73,8 +73,8 @@
 				<a href="../../../slip/$groupData.id">$groupData.description ($groupData.id)</a>
 			</td>
 			#end
-			<td class="#if($firstDate)top_thick #end #if($firstSlip)top_medium #end">$changeData.change</td>
-			<td class="#if($firstDate)top_thick #end #if($firstSlip)top_medium #end"><strong>$changeData.balance</strong></td>
+			<td class="#if($firstDate)top_thick #end #if($firstSlip)top_medium #end">$__money.f($changeData.change)</td>
+			<td class="#if($firstDate)top_thick #end #if($firstSlip)top_medium #end"><strong>$__money.f($changeData.balance)</strong></td>
 		</tr>
 			#end
 		#end

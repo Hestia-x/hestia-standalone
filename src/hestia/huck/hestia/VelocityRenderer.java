@@ -16,7 +16,9 @@ import org.apache.velocity.exception.ResourceNotFoundException;
 
 public class VelocityRenderer {
 	private VelocityEngine ve;
-	public VelocityRenderer() throws IOException {
+	private MoneyFormatter money;
+	
+	public VelocityRenderer(int moneyScale) throws IOException {
 		ve = new VelocityEngine();
 		
 		ve.addProperty("runtime.log.logsystem.class", org.apache.velocity.runtime.log.Log4JLogChute.class.getName());
@@ -38,6 +40,8 @@ public class VelocityRenderer {
 		ve.setProperty("directive.foreach.counter.initial.value", "1");
 		
 		ve.init();
+		
+		this.money = new MoneyFormatter(moneyScale);
 	}
 	
 	public boolean hasTemplate(String path) {
@@ -72,6 +76,7 @@ public class VelocityRenderer {
 
 		VelocityContext wrapContext = new VelocityContext(valueMap);
 		wrapContext.put("__req", req);
+		wrapContext.put("__money", money);
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		Writer wr = new OutputStreamWriter(out, "UTF-8");
 		page.merge(wrapContext, wr);
@@ -80,5 +85,45 @@ public class VelocityRenderer {
 		HttpResponse res = new HttpResponse(HttpResponse.Status.OK, out.toByteArray());
 		res.setHeader("Content-Type", "text/html; charset=UTF-8");
 		return res;
+	}
+	
+	public static class MoneyFormatter {
+		private int scale;
+		public MoneyFormatter(int moneyScale) {
+			this.scale = moneyScale;
+		}
+		public String f(Integer value) {
+			if( null == value ) {
+				return null;
+			}
+			boolean minus = false;
+			if( 0 > value ) {
+				value = 0 - value;
+				minus = true;
+			}
+			StringBuffer result = new StringBuffer();
+			int point = scale;
+			int comma = point+3;
+			while( value > 0 || point >= 0 ) {
+				if( 0 == point ) {
+					result.append('.');
+				}
+				if( 0 == comma ) {
+					result.append(',');
+					comma = 3;
+				}
+				result.append(value % 10);
+				value /= 10;
+				point--;
+				comma--;
+			}
+			if( minus ) {
+				result.append('-');
+			}
+			return result.reverse().toString();
+		}
+		public String r(Integer value) {
+			return null==value?null:f(0-value);
+		}
 	}
 }

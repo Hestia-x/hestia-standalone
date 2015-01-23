@@ -43,9 +43,9 @@
 		#foreach( $accountChange in $history.balanceChangeSummary.balanceChangeList )
 		<tr>
 			<td class="right_thick">$accountChange.accountName</td>
-			<td>$accountChange.before</td>
-			<td>$accountChange.change</td>
-			<td><strong>$accountChange.balance</strong></td>
+			<td>$__money.f($accountChange.before)</td>
+			<td>$__money.f($accountChange.change)</td>
+			<td><strong>$__money.f($accountChange.balance)</strong></td>
 		</tr>
 		#end
 	</tbody>
@@ -53,9 +53,9 @@
 		<tr>
 			#set( $changeSummary = $history.balanceChangeSummary.summary )
 			<td class="right_thick">$changeSummary.accountName</td>
-			<td>$changeSummary.before</td>
-			<td>$changeSummary.change</td>
-			<td><strong>$changeSummary.balance</strong></td>
+			<td>$__money.f($changeSummary.before)</td>
+			<td>$__money.f($changeSummary.change)</td>
+			<td><strong>$__money.f($changeSummary.balance)</strong></td>
 		</tr>
 	</tfoot>
 </table>
@@ -94,8 +94,8 @@
 			#end
 			#end
 			<td class="#if($firstDate)top_thick #end #if($firstSlip)top_medium #end">$changeData.accountName</td>			
-			<td class="#if($firstDate)top_thick #end #if($firstSlip)top_medium #end">$changeData.change</td>
-			<td class="#if($firstDate)top_thick #end #if($firstSlip)top_medium #end"><strong>$changeData.balance</strong></td>
+			<td class="#if($firstDate)top_thick #end #if($firstSlip)top_medium #end">$__money.f($changeData.change)</td>
+			<td class="#if($firstDate)top_thick #end #if($firstSlip)top_medium #end"><strong>$__money.f($changeData.balance)</strong></td>
 		</tr>
 			#end
 		#end

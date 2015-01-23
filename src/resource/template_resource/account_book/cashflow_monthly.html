@@ -34,7 +34,7 @@
 		#foreach( $change in $income.balanceChangeList )
 		<tr>
 			<td class="right_thick"><a href="./credit/$change.accountId">$change.accountName</a></td>
-			<td>$change.change</td>
+			<td>$__money.r($change.change)</td>
 		</tr>
 		#end
 	</tbody>
@@ -42,7 +42,7 @@
 		<tr>
 			#set( $changeSummary = $income.summary )
 			<td class="right_thick">$changeSummary.accountName</td>
-			<td>$changeSummary.change</td>
+			<td>$__money.r($changeSummary.change)</td>
 		</tr>
 	</tfoot>
 </table>
@@ -58,7 +58,7 @@
 		#foreach( $change in $outcome.balanceChangeList )
 		<tr>
 			<td class="right_thick"><a href="./debit/$change.accountId">$change.accountName</a></td>
-			<td>$change.change</td>
+			<td>$__money.f($change.change)</td>
 		</tr>
 		#end
 	</tbody>
@@ -66,7 +66,7 @@
 		<tr>
 			#set( $changeSummary = $outcome.summary )
 			<td class="right_thick">$changeSummary.accountName</td>
-			<td>$changeSummary.change</td>
+			<td>$__money.f($changeSummary.change)</td>
 		</tr>
 	</tfoot>
 </table>

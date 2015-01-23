@@ -10,14 +10,15 @@ import huck.hestia.db.Debit;
 import huck.hestia.db.DebitCode;
 import huck.hestia.db.HestiaDB;
 import huck.hestia.history.AccountHistory;
-import huck.hestia.history.BalanceChangeGroup;
 import huck.hestia.history.AccountHistory.GroupType;
+import huck.hestia.history.BalanceChangeGroup;
 import huck.hestia.history.HistoryGenerator;
 import huck.simplehttp.HttpRequest;
 import huck.simplehttp.HttpResponse;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
@@ -63,8 +64,11 @@ public class ViewCashflowController implements HestiaController {
 			notFound(req);
 		}
 		LocalDate endDate = beginDate.plusMonths(1).minusDays(1);
-		List<Debit> debitList = db.retrieveDebitList(null);
-		List<Credit> creditList = db.retrieveCreditList(null);
+		LocalDateTime fromDttm = beginDate.atStartOfDay().minusNanos(1);
+		LocalDateTime toDttm = endDate.plusDays(1).atStartOfDay();
+		
+		List<Debit> debitList = db.retrieveDebitList(a -> a.occurrenceDttm().isBefore(toDttm)&&a.occurrenceDttm().isAfter(fromDttm));
+		List<Credit> creditList = db.retrieveCreditList(a -> a.occurrenceDttm().isBefore(toDttm)&&a.occurrenceDttm().isAfter(fromDttm));
 		BalanceChangeGroup income = HistoryGenerator.createAccountHistory(beginDate, endDate, GroupType.MONTH, creditList, CreditCode.class, a->null==a.asset()).getBalanceChangeSummary();
 		BalanceChangeGroup outcome = HistoryGenerator.createAccountHistory(beginDate, endDate, GroupType.MONTH, debitList, DebitCode.class, a->null==a.asset()).getBalanceChangeSummary();
 		valueMap.put("from", beginDate);
@@ -84,16 +88,18 @@ public class ViewCashflowController implements HestiaController {
 			notFound(req);
 		}
 		LocalDate endDate = beginDate.plusMonths(1).minusDays(1);
+		LocalDateTime fromDttm = beginDate.atStartOfDay().minusNanos(1);
+		LocalDateTime toDttm = endDate.plusDays(1).atStartOfDay();
 		
 		String id = path.get(2);
 		AccountHistory history = null;
 		switch(path.get(1)) {
 		case "debit/":
-			List<Debit> debitList = db.retrieveDebitList(null);
+			List<Debit> debitList = db.retrieveDebitList(a -> a.occurrenceDttm().isBefore(toDttm)&&a.occurrenceDttm().isAfter(fromDttm));
 			history = HistoryGenerator.createAccountHistory(beginDate, endDate, GroupType.OCCURRENCE, debitList, DebitCode.class, a->id.equals(""+a.id()));
 			break;
 		case "credit/":
-			List<Credit> creditList = db.retrieveCreditList(null);
+			List<Credit> creditList = db.retrieveCreditList(a -> a.occurrenceDttm().isBefore(toDttm)&&a.occurrenceDttm().isAfter(fromDttm));
 			history = HistoryGenerator.createAccountHistory(beginDate, endDate, GroupType.OCCURRENCE, creditList, CreditCode.class, a->id.equals(""+a.id()));
 			break;
 		default:

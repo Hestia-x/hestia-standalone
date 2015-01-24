@@ -52,7 +52,40 @@ public class ViewCashflowController implements HestiaController {
 	}
 	
 	private String cashflowMain(HttpRequest req, HashMap<String, Object> valueMap) throws Exception {
-		return null;
+		LocalDateTime fromDttm = LocalDateTime.MIN;
+		LocalDateTime toDttm = LocalDateTime.MAX;
+		LocalDate fromDate = fromDttm.toLocalDate().plusDays(1);
+		LocalDate toDate = toDttm.toLocalDate().minusDays(1);
+		
+		List<Debit> debitList = db.retrieveDebitList(a -> a.occurrenceDttm().isBefore(toDttm)&&a.occurrenceDttm().isAfter(fromDttm));
+		List<Credit> creditList = db.retrieveCreditList(a -> a.occurrenceDttm().isBefore(toDttm)&&a.occurrenceDttm().isAfter(fromDttm));
+		AccountHistory income = HistoryGenerator.createAccountHistory(fromDate, toDate, GroupType.MONTH, creditList, CreditCode.class, a->null==a.asset());
+		AccountHistory outcome = HistoryGenerator.createAccountHistory(fromDate, toDate, GroupType.MONTH, debitList, DebitCode.class, a->null==a.asset());
+		
+		HashMap<String, HashMap<String, Integer>> result = new HashMap<>();
+		for( BalanceChangeGroup group : income.getBalanceChangeGroupList() ) {
+			String month = group.getDate().format(DateTimeFormatter.ofPattern("uuuu-MM"));
+			int value = 0-group.getSummary().getChange();
+			HashMap<String, Integer> map = new HashMap<>();
+			map.put("income", value);
+			result.put(month, map);
+		}
+		for( BalanceChangeGroup group : outcome.getBalanceChangeGroupList() ) {
+			String month = group.getDate().format(DateTimeFormatter.ofPattern("uuuu-MM"));
+			int value = group.getSummary().getChange();
+			HashMap<String, Integer> map = result.get(month);
+			if( null == map ) {
+				map = new HashMap<>();
+				map.put("income", 0);
+				result.put(month, map);	
+			}
+			map.put("outcome", value);
+		}
+		for( HashMap<String,Integer> data : result.values() ) {
+			data.put("sum", data.get("income")-data.get("outcome"));
+		}
+		valueMap.put("result", result);
+		return "/account_book/cashflow.html";
 	}
 	private String cashflowMonthly(HttpRequest req, HashMap<String, Object> valueMap) throws Exception {
 		RequestPath path = (RequestPath)req.getAttribute("path");

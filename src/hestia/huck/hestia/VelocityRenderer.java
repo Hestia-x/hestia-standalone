@@ -33,7 +33,7 @@ public class VelocityRenderer {
 		ve.setProperty("resource.manager.logwhenfound", "true");
 		
 		ve.setProperty("velocimacro.library.autoreload", "true");
-		ve.setProperty("velocimacro.library", "");
+		ve.setProperty("velocimacro.library", "/template_resource/tiles.vm");
 		
 		ve.setProperty("directive.foreach.counter.name", "velocityCount");
 		ve.setProperty("directive.foreach.iterator.name", "velocityHasNext");
@@ -94,6 +94,13 @@ public class VelocityRenderer {
 		}
 		public String f(Integer value) {
 			if( null == value ) {
+				return f((Long)null);
+			} else {
+				return f((long)(int)value);
+			}
+		}
+		public String f(Long value) {
+			if( null == value ) {
 				return null;
 			}
 			boolean minus = false;
@@ -123,6 +130,13 @@ public class VelocityRenderer {
 			return result.reverse().toString();
 		}
 		public String r(Integer value) {
+			if( null == value ) {
+				return r((Long)null);
+			} else {
+				return r((long)(int)value);
+			}
+		}
+		public String r(Long value) {
 			return null==value?null:f(0-value);
 		}
 	}

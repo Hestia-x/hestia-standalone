@@ -1,0 +1,30 @@
+#macro( printHeader )
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<script src="/js/jquery-1.11.2.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+#end
+
+#macro( printNavbar $menuName )
+<nav class="navbar navbar-default">
+	<div class="container-fluid">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#hestia-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			<a class="navbar-brand" href="/">Hestia</a>
+		</div>
+		<div class="collapse navbar-collapse" id="hestia-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				<li #if($menuName=="asset") class="active" #end><a href="/account_book/view/asset/">Asset</a></li>
+				<li #if($menuName=="cashflow") class="active" #end><a href="/account_book/view/cashflow/">Cashflow</a></li>
+				<li #if($menuName=="budget") class="active" #end><a href="#">Budget</a></li>
+				<li #if($menuName=="slip") class="active" #end><a href="/account_book/view/slip/">Slip</a></li>
+			</ul>
+			<button type="button" class="btn btn-default navbar-btn navbar-right">Add Slip</button>
+		</div>
+	</div>
+</nav>
+#end

@@ -1,0 +1,93 @@
+<html>
+<head>
+	#printHeader()
+	<title>Cashflow</title>
+	<style>
+	th {
+		text-align: center;
+	}
+	td {
+		text-align: right;
+	}
+	</style>
+</head>
+<body>
+#printNavbar("slip")
+<div class="container-fluid">
+<div class="row">
+	<div class="col-sm-1 col-md-1"></div>
+	<div class="col-sm-8 col-md-6 col-lg-5">
+		<strong>Id:</strong> $slip.id()<br/>
+		<strong>Shop:</strong> $slip.shop().name()<br/>
+		<strong>Datetime:</strong> $slip.slipDttm()<br/>
+	</div>
+</div>
+<div class="row">&nbsp;</div>
+<div class="row">
+	<div class="col-sm-1 col-md-1"></div>
+	<div class="col-sm-10 col-md-8 col-lg-7">
+	<table class="table table-hover table-bordered">
+	<caption>Purchase List</caption>
+	<thead>
+		<tr>
+			<th class="col-xs-3">code</th>
+			<th class="col-xs-6">description</th>
+			<th class="col-xs-1">quantity</th>
+			<th class="col-xs-2">unit price</th>
+		</tr>
+	</thead>
+	<tbody>
+	#foreach( $debit in $debitList )
+		<tr>
+			<td>$debit.debitCode().name()</td>
+			<td>$debit.description()</td>
+			<td>$debit.quantity()</td>
+			<td>$__money.f($debit.unitPrice())</td>
+		</tr>
+	#end
+	</tbody>
+	<tfoot>
+		<tr class="danger">
+			<td><strong>Summary</strong></td>
+			<td></td>
+			<td></td>
+			<td><strong>$__money.f($debitSummary.sum)</strong></td>
+		</tr>
+	</tfoot>
+	</table>
+	</div>
+</div>
+<div class="row">
+	<div class="col-sm-1 col-md-1"></div>
+	<div class="col-sm-10 col-md-8 col-lg-7">
+	<table class="table table-hover table-bordered">
+	<caption>Paying List</caption>
+	<thead>
+		<tr>
+			<th class="col-xs-3">code</th>
+			<th class="col-xs-5">description</th>
+			<th class="col-xs-2">price</th>
+		</tr>
+	</thead>
+	<tbody>
+	#foreach( $credit in $creditList )
+		<tr>
+			<td>$credit.creditCode().name()</td>
+			<td>$credit.description()</td>
+			<td>$__money.f($credit.price())</td>
+		</tr>
+	#end
+	</tbody>
+	<tfoot>
+		<tr class="danger">
+			<td><strong>Summary</strong></td>
+			<td></td>
+			<td><strong>$__money.f($creditSummary.sum)</strong></td>
+		</tr>
+	</tfoot>
+	</table>
+	</div>
+</div>
+</div>
+</body>
+</html>

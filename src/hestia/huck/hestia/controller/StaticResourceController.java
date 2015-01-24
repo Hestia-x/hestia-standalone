@@ -11,6 +11,10 @@ import java.util.HashMap;
 
 public class StaticResourceController implements HestiaController {
 	private HashMap<String, String> mimeMap = new HashMap<>();
+	public StaticResourceController() {
+		mimeMap.put("css", "text/css");
+		mimeMap.put("js", "text/javascript");
+	}
 	
 	@Override
 	public HttpResponse controll(HttpRequest req, String matchPath) throws HttpException, Exception {
@@ -26,6 +30,9 @@ public class StaticResourceController implements HestiaController {
 		}
 		String ext = 0 > extIdx ? "" : path.substring(extIdx+1);
 		String contentType = mimeMap.get(ext);
+		if( null == contentType ) {
+			contentType = "application/octet-stream";
+		}
 		if( contentType.startsWith("text") ) {
 			contentType += "; charset=utf8";
 		}

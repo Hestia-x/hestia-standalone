@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="kr">
+<head>
+	#printHeader()
+	<title>Asset</title>
+	<style>
+	th {
+		text-align: center;
+	}
+	td {
+		text-align: right;
+	}
+	tfoot tr td {
+		font-weight: 700;
+	}
+	</style>
+</head>
+<body>
+#printNavbar("slip")
+<div class="container-fluid">
+<div class="row">
+	<div class="col-sm-1 col-md-1"></div>
+	<div class="col-sm-8 col-md-6 col-lg-5">
+		<strong>Data:</strong> $from ~ $to
+	</div>
+</div>
+<div class="row">&nbsp;</div>
+<div class="row">
+	<div class="col-sm-1 col-md-1"></div>
+	<div class="col-sm-8 col-md-6 col-lg-5">
+	<table class="table table-hover table-striped table-bordered table-condensed">
+		<thead>
+			<tr>
+				<th class="col-xs-1">Id</th>
+				<th class="col-xs-2">Date time</th>
+				<th class="col-xs-2">Shop</th>
+				<th class="col-xs-1">Debit</th>
+				<th class="col-xs-1">Credit</th>
+			</tr>
+		</thead>
+		<tbody>
+			#foreach( $slip in $slipList )
+			<tr>
+				<td><a href="./$slip.id()">$slip.id()</a></td>
+				<td>$__tool.dateFormat($slip.slipDttm(), "uuuu-MM-dd HH:mm:ss")</td>
+				<td>$slip.shop().name()</td>
+				<td>$result.get($slip).get("debit")</td>
+				<td>$result.get($slip).get("credit")</td>			
+			</tr>
+			#end
+		</tbody>
+	</table>
+	</div>
+</div>
+</div>
+</body>
+</html>

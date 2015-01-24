@@ -19,7 +19,7 @@
 	<div class="col-sm-8 col-md-6 col-lg-5">
 		<strong>Id:</strong> $slip.id()<br/>
 		<strong>Shop:</strong> $slip.shop().name()<br/>
-		<strong>Datetime:</strong> $slip.slipDttm()<br/>
+		<strong>Datetime:</strong> $__tool.dateFormat($slip.slipDttm(), "uuuu-MM-dd HH:mm:ss")<br/>
 	</div>
 </div>
 <div class="row">&nbsp;</div>

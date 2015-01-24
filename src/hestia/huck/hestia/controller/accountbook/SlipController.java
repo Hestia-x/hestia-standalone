@@ -1,29 +1,27 @@
 package huck.hestia.controller.accountbook;
 
 import huck.hestia.HestiaController;
+import huck.hestia.HttpUtil;
 import huck.hestia.RequestPath;
 import huck.hestia.VelocityRenderer;
 import huck.hestia.VelocityRenderer.ActionFunction;
 import huck.hestia.db.Credit;
-import huck.hestia.db.CreditCode;
 import huck.hestia.db.Debit;
-import huck.hestia.db.DebitCode;
 import huck.hestia.db.HestiaDB;
 import huck.hestia.db.Slip;
-import huck.hestia.history.AccountHistory;
-import huck.hestia.history.AccountHistory.GroupType;
-import huck.hestia.history.BalanceChangeGroup;
-import huck.hestia.history.HistoryGenerator;
 import huck.simplehttp.HttpRequest;
 import huck.simplehttp.HttpResponse;
 
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IntSummaryStatistics;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class SlipController implements HestiaController {
@@ -52,40 +50,57 @@ public class SlipController implements HestiaController {
 	}
 	
 	private String slipMain(HttpRequest req, HashMap<String, Object> valueMap) throws Exception {
-		LocalDateTime fromDttm = LocalDateTime.MIN;
-		LocalDateTime toDttm = LocalDateTime.MAX;
-		LocalDate fromDate = fromDttm.toLocalDate().plusDays(1);
-		LocalDate toDate = toDttm.toLocalDate().minusDays(1);
+		LocalDate fromDate = HttpUtil.getLocalDate(req, "from", false);
+		LocalDate toDate = HttpUtil.getLocalDate(req, "to", false);
+		LocalDate today = LocalDate.now();
 		
-		List<Debit> debitList = db.retrieveDebitList(a -> a.occurrenceDttm().isBefore(toDttm)&&a.occurrenceDttm().isAfter(fromDttm));
-		List<Credit> creditList = db.retrieveCreditList(a -> a.occurrenceDttm().isBefore(toDttm)&&a.occurrenceDttm().isAfter(fromDttm));
-		AccountHistory income = HistoryGenerator.createAccountHistory(fromDate, toDate, GroupType.MONTH, creditList, CreditCode.class, a->null==a.asset());
-		AccountHistory outcome = HistoryGenerator.createAccountHistory(fromDate, toDate, GroupType.MONTH, debitList, DebitCode.class, a->null==a.asset());
+		//  기준 되는 LocalDateTime 생성.
+		if( null == toDate ) {
+			toDate = today;
+		}
+		if( null == fromDate ) {
+			LocalDate a = toDate.minusDays(5);
+			LocalDate b = today.withDayOfMonth(1);
+			fromDate = a.isBefore(b) ? a : b;
+		}
+		if( fromDate.isAfter(toDate) ) {
+			LocalDate tmp = fromDate;
+			fromDate = toDate;
+			toDate = tmp;
+		}
+		LocalDateTime fromDttm = fromDate.atStartOfDay().minusNanos(1);
+		LocalDateTime toDttm = toDate.plusDays(1).atStartOfDay();
 		
-		HashMap<String, HashMap<String, Integer>> result = new HashMap<>();
-		for( BalanceChangeGroup group : income.getBalanceChangeGroupList() ) {
-			String month = group.getDate().format(DateTimeFormatter.ofPattern("uuuu-MM"));
-			int value = 0-group.getSummary().getChange();
-			HashMap<String, Integer> map = new HashMap<>();
-			map.put("income", value);
-			result.put(month, map);
+		List<Slip> dbSlipList = db.retrieveSlipList(a -> a.slipDttm().isBefore(toDttm)&&a.slipDttm().isAfter(fromDttm));
+		Set<Integer> slipIdSet = dbSlipList.stream().collect(Collectors.mapping(a->a.id(), Collectors.toSet()));
+		List<Debit> debitList = db.retrieveDebitList(a->slipIdSet.contains(a.slip().id()));
+		List<Credit> creditList = db.retrieveCreditList(a->slipIdSet.contains(a.slip().id()));
+		
+		ArrayList<Slip> slipList = new ArrayList<>(dbSlipList);
+		slipList.sort(Comparator.comparingInt(a->a.id()));
+		Collections.reverse(slipList);
+		
+		HashMap<Slip, HashMap<String, Integer>> result = new HashMap<>();
+		for( Slip slip : slipList ) {
+			HashMap<String, Integer> data = new HashMap<>();
+			data.put("debit", 0);
+			data.put("credit", 0);
+			result.put(slip, data);
 		}
-		for( BalanceChangeGroup group : outcome.getBalanceChangeGroupList() ) {
-			String month = group.getDate().format(DateTimeFormatter.ofPattern("uuuu-MM"));
-			int value = group.getSummary().getChange();
-			HashMap<String, Integer> map = result.get(month);
-			if( null == map ) {
-				map = new HashMap<>();
-				map.put("income", 0);
-				result.put(month, map);	
-			}
-			map.put("outcome", value);
+		for( Debit debit : debitList ) {
+			HashMap<String, Integer> data = result.get(debit.slip());
+			data.put("debit", data.get("debit")+debit.quantity()*debit.unitPrice());			
 		}
-		for( HashMap<String,Integer> data : result.values() ) {
-			data.put("sum", data.get("income")-data.get("outcome"));
+		for( Credit credit : creditList ) {
+			HashMap<String, Integer> data = result.get(credit.slip());
+			data.put("credit", data.get("credit")+credit.price());			
 		}
+		
+		valueMap.put("from", fromDate);
+		valueMap.put("to", toDate);
+		valueMap.put("slipList", slipList);
 		valueMap.put("result", result);
-		return "/account_book/cashflow.html";
+		return "/account_book/slip_list.html";
 	}
 	private String slipDetail(HttpRequest req, HashMap<String, Object> valueMap) throws Exception {
 		RequestPath path = (RequestPath)req.getAttribute("path");
@@ -106,4 +121,3 @@ public class SlipController implements HestiaController {
 		return "/account_book/slip_detail.html";
 	}
 }
-

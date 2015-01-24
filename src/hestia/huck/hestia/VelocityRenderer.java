@@ -7,6 +7,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 
 import org.apache.velocity.Template;
@@ -77,6 +79,7 @@ public class VelocityRenderer {
 		VelocityContext wrapContext = new VelocityContext(valueMap);
 		wrapContext.put("__req", req);
 		wrapContext.put("__money", money);
+		wrapContext.put("__tool", new Tools());
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		Writer wr = new OutputStreamWriter(out, "UTF-8");
 		page.merge(wrapContext, wr);
@@ -87,6 +90,11 @@ public class VelocityRenderer {
 		return res;
 	}
 	
+	public static class Tools {
+		public String dateFormat(LocalDateTime dateTime, String pattern) {
+			return dateTime.format(DateTimeFormatter.ofPattern(pattern));
+		}
+	}
 	public static class MoneyFormatter {
 		private int scale;
 		public MoneyFormatter(int moneyScale) {

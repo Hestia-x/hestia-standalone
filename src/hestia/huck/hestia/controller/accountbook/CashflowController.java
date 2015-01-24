@@ -25,11 +25,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class ViewCashflowController implements HestiaController {
+public class CashflowController implements HestiaController {
 	private HestiaDB db;
 	private VelocityRenderer renderer;
 	
-	public ViewCashflowController(HestiaDB db, VelocityRenderer renderer) throws IOException {
+	public CashflowController(HestiaDB db, VelocityRenderer renderer) throws IOException {
 		this.db = db;
 		this.renderer = renderer;
 	}

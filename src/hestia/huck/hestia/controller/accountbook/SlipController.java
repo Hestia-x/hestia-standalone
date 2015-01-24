@@ -26,11 +26,11 @@ import java.util.IntSummaryStatistics;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ViewSlipController implements HestiaController {
+public class SlipController implements HestiaController {
 	private HestiaDB db;
 	private VelocityRenderer renderer;
 	
-	public ViewSlipController(HestiaDB db, VelocityRenderer renderer) throws IOException {
+	public SlipController(HestiaDB db, VelocityRenderer renderer) throws IOException {
 		this.db = db;
 		this.renderer = renderer;
 	}

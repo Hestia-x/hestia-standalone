@@ -3,10 +3,10 @@ package huck.hestia;
 import huck.common.jdbc.DBConnectionManager;
 import huck.hestia.controller.DefaultController;
 import huck.hestia.controller.StaticResourceController;
-import huck.hestia.controller.accountbook.ViewAssetController;
-import huck.hestia.controller.accountbook.ViewCashflowController;
-import huck.hestia.controller.accountbook.ViewController;
-import huck.hestia.controller.accountbook.ViewSlipController;
+import huck.hestia.controller.accountbook.AssetController;
+import huck.hestia.controller.accountbook.CashflowController;
+import huck.hestia.controller.accountbook.AccountBookController;
+import huck.hestia.controller.accountbook.SlipController;
 import huck.hestia.db.HestiaDB;
 import huck.hestia.db.memory.HestiaMemoryDB;
 import huck.hestia.db.memory.LoaderMysql;
@@ -47,10 +47,10 @@ public class HestiaHttpProcessor implements HttpProcessor {
 
 		controllerMap = new HashMap<>();
 		controllerMap.put("/", new DefaultController(db));
-		controllerMap.put("/account_book/view/", new ViewController(db, renderer));
-		controllerMap.put("/account_book/view/asset/", new ViewAssetController(db, renderer));
-		controllerMap.put("/account_book/view/cashflow/", new ViewCashflowController(db, renderer));
-		controllerMap.put("/account_book/view/slip/", new ViewSlipController(db, renderer));
+		controllerMap.put("/account_book/", new AccountBookController(db, renderer));
+		controllerMap.put("/account_book/asset/", new AssetController(db, renderer));
+		controllerMap.put("/account_book/cashflow/", new CashflowController(db, renderer));
+		controllerMap.put("/account_book/slip/", new SlipController(db, renderer));
 		
 		controllerMap.put("/css/", new StaticResourceController());
 		controllerMap.put("/fonts/", new StaticResourceController());

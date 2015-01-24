@@ -9,8 +9,8 @@ import huck.simplehttp.HttpResponse;
 
 import java.io.IOException;
 
-public class ViewController implements HestiaController {
-	public ViewController(HestiaDB db, VelocityRenderer renderer) throws IOException {
+public class AccountBookController implements HestiaController {
+	public AccountBookController(HestiaDB db, VelocityRenderer renderer) throws IOException {
 	}
 	
 	@Override

@@ -22,11 +22,11 @@ import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
-public class ViewAssetController implements HestiaController {
+public class AssetController implements HestiaController {
 	private HestiaDB db;
 	private VelocityRenderer renderer;
 	
-	public ViewAssetController(HestiaDB db, VelocityRenderer renderer) throws IOException {
+	public AssetController(HestiaDB db, VelocityRenderer renderer) throws IOException {
 		this.db = db;
 		this.renderer = renderer;
 	}
@@ -82,7 +82,6 @@ public class ViewAssetController implements HestiaController {
 				LocalDate b = today.withDayOfMonth(1);
 				fromDate = a.isBefore(b) ? a : b;
 			}
-			
 		}
 		if( fromDate.isAfter(toDate) ) {
 			LocalDate tmp = fromDate;

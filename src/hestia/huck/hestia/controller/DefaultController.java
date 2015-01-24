@@ -15,7 +15,7 @@ public class DefaultController implements HestiaController {
 	@Override
 	public HttpResponse controll(HttpRequest req, String matchPath) throws HttpException, Exception {
 		if( "/".equals(req.getRequestPath()) ) {
-			return this.redirectTo("/account_book/view/asset/");
+			return this.redirectTo("/account_book/");
 		} else {
 			notFound(req);
 			return null;

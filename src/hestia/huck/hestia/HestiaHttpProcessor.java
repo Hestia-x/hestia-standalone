@@ -6,6 +6,7 @@ import huck.hestia.controller.StaticResourceController;
 import huck.hestia.controller.accountbook.ViewAssetController;
 import huck.hestia.controller.accountbook.ViewCashflowController;
 import huck.hestia.controller.accountbook.ViewController;
+import huck.hestia.controller.accountbook.ViewSlipController;
 import huck.hestia.db.HestiaDB;
 import huck.hestia.db.memory.HestiaMemoryDB;
 import huck.hestia.db.memory.LoaderMysql;
@@ -49,6 +50,8 @@ public class HestiaHttpProcessor implements HttpProcessor {
 		controllerMap.put("/account_book/view/", new ViewController(db, renderer));
 		controllerMap.put("/account_book/view/asset/", new ViewAssetController(db, renderer));
 		controllerMap.put("/account_book/view/cashflow/", new ViewCashflowController(db, renderer));
+		controllerMap.put("/account_book/view/slip/", new ViewSlipController(db, renderer));
+		
 		controllerMap.put("/css/", new StaticResourceController());
 		controllerMap.put("/fonts/", new StaticResourceController());
 		controllerMap.put("/js/", new StaticResourceController());

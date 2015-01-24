@@ -29,7 +29,7 @@ finance manager for family
 * /account_book/cashflow/${year}_${month}/
 * /account_book/cashflow/${year}_${month}/debit/${debit_code_id}
 * /account_book/cashflow/${year}_${month}/credit/${credit_code_id}
-  * 음수 표기는 수정해야 함.
+
 ### 구현 할 URL
 * view
   * /account_book/view/budget/${year}_${month}

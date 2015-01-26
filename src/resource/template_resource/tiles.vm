@@ -23,7 +23,17 @@
 				<li #if($menuName=="budget") class="active" #end><a href="#">Budget</a></li>
 				<li #if($menuName=="slip") class="active" #end><a href="/account_book/slip/">Slip</a></li>
 			</ul>
-			<button type="button" class="btn btn-default navbar-btn navbar-right">Add Slip</button>
+			<ul class="nav navbar-nav navbar-right">
+				<li><button type="button" class="btn btn-default navbar-btn">Add Slip</button></li>
+				<li class="dropdown #if($menuName=="system") active #end">
+					<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">System <span class="caret"></span></a>
+					<ul class="dropdown-menu" role="menu">
+					<li><a href="/system/config/">Config</a></li>
+					<li><a href="/system/load/">Load</a></li>
+					<li><a href="/system/save/">Save</a></li>
+					</ul>
+				</li>
+			</ul>
 		</div>
 	</div>
 </nav>

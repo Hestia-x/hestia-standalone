@@ -44,8 +44,8 @@
 				<td><a href="./$slip.id()">$slip.id()</a></td>
 				<td>$__tool.dateFormat($slip.slipDttm(), "uuuu-MM-dd HH:mm:ss")</td>
 				<td>$slip.shop().name()</td>
-				<td>$result.get($slip).get("debit")</td>
-				<td>$result.get($slip).get("credit")</td>			
+				<td>$__money.f($result.get($slip).get("debit"))</td>
+				<td>$__money.f($result.get($slip).get("credit"))</td>			
 			</tr>
 			#end
 		</tbody>

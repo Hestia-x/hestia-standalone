@@ -18,7 +18,7 @@ public class LoaderMysql extends HestiaMemoryDB.Loader {
 	}
 
 	@Override
-	protected void load(HestiaMemoryDB db) throws SQLException {
+	protected String load(HestiaMemoryDB db) throws SQLException {
 		try( DAOHelper dao = new DAOHelper(dbConnManager, false) ) {
 			DAOResultSet rs;
 	
@@ -131,6 +131,8 @@ public class LoaderMysql extends HestiaMemoryDB.Loader {
 				this.addCredit(db, credit);
 			}
 			Logger.getLogger("hestia").info("[DB] credits loaded");
+			
+			return "mysql";
 		}
 	}
 }

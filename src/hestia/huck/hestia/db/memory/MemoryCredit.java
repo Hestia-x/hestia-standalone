@@ -65,6 +65,9 @@ class MemoryCredit implements Credit {
 		return price;
 	}
 	public void price(int price) {
+		if( 0 >= price ) {
+			throw new IllegalArgumentException("price must be positive.");
+		}
 		this.price = price;
 	}
 

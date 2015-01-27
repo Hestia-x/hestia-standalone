@@ -10,7 +10,7 @@ import huck.simplehttp.HttpResponse;
 import java.io.IOException;
 
 public class AccountBookController implements HestiaController {
-	public AccountBookController(HestiaDB db, VelocityRenderer renderer) throws IOException {
+	public AccountBookController(HestiaDB<?,?> db, VelocityRenderer renderer) throws IOException {
 	}
 	
 	@Override

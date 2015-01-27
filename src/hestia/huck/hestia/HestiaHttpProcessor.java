@@ -3,11 +3,10 @@ package huck.hestia;
 import huck.common.jdbc.DBConnectionManager;
 import huck.hestia.controller.DefaultController;
 import huck.hestia.controller.StaticResourceController;
+import huck.hestia.controller.accountbook.AccountBookController;
 import huck.hestia.controller.accountbook.AssetController;
 import huck.hestia.controller.accountbook.CashflowController;
-import huck.hestia.controller.accountbook.AccountBookController;
 import huck.hestia.controller.accountbook.SlipController;
-import huck.hestia.db.HestiaDB;
 import huck.hestia.db.memory.HestiaMemoryDB;
 import huck.hestia.db.memory.LoaderMysql;
 import huck.simplehttp.HttpException;
@@ -34,7 +33,9 @@ public class HestiaHttpProcessor implements HttpProcessor {
 		String dbUrl = "jdbc:mysql://127.0.0.1:3306/account_book?characterEncoding=UTF-8";
 		String dbUser = "root";
 		String dbPassword = null;
-		HestiaDB db = new HestiaMemoryDB(new LoaderMysql(new DBConnectionManager(dbUrl, dbUser, dbPassword)));
+		
+		HestiaMemoryDB db = new HestiaMemoryDB();
+		db.load(new LoaderMysql(new DBConnectionManager(dbUrl, dbUser, dbPassword)));
 		
 		int moneyScale = 2;
 

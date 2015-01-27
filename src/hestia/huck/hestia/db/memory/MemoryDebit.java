@@ -67,6 +67,9 @@ class MemoryDebit implements Debit {
 		return unitPrice;
 	}
 	public void unitPrice(int unitPrice) {
+		if( 0 >= unitPrice ) {
+			throw new IllegalArgumentException("unitPrice must be positive.");
+		}
 		this.unitPrice = unitPrice;
 	}
 	
@@ -75,6 +78,9 @@ class MemoryDebit implements Debit {
 		return quantity;
 	}
 	public void quantity(int quantity) {
+		if( 0 >= quantity ) {
+			throw new IllegalArgumentException("quantity must be positive.");
+		}
 		this.quantity = quantity;
 	}
 	

@@ -8,6 +8,8 @@ import huck.hestia.db.DebitCode;
 import huck.hestia.db.HestiaDB;
 import huck.hestia.db.Shop;
 import huck.hestia.db.Slip;
+import huck.hestia.db.memory.HestiaMemoryDB.Dumper;
+import huck.hestia.db.memory.HestiaMemoryDB.Loader;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -22,7 +24,20 @@ import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
-public class HestiaMemoryDB implements HestiaDB {
+public class HestiaMemoryDB implements HestiaDB<Loader, Dumper> {
+	private <Target, Implement extends Target> List<Target> retrieveListFromMap(TreeMap<Integer, Implement> map, Predicate<Target> predicate, ToIntFunction<Target> keyExtractor) {
+		Supplier<List<Target>> supplier = ArrayList::new;
+		List<Target> result;
+		if( null == predicate ) {
+			result = supplier.get();
+			result.addAll(map.values());
+		} else {
+			result = map.values().stream().filter(predicate).collect(Collectors.toList());
+			result.sort(Comparator.comparingInt(keyExtractor));
+		}
+		return Collections.unmodifiableList(result);
+	}
+	
 	@Override
 	public List<Asset> retrieveAssetList(Predicate<Asset> predicate) {
 		return retrieveListFromMap(assetMap, predicate, a->a.id());
@@ -59,7 +74,8 @@ public class HestiaMemoryDB implements HestiaDB {
 			throw new NoSuchElementException("no shopId: " + shopId);
 		}
 		MemorySlip slip = new MemorySlip(slipMap.lastKey()+1, dttm, shop);
-		slipMap.put(slip.id(), slip);		
+		slipMap.put(slip.id(), slip);
+		modified = true;
 		return slip;
 	}
 	@Override
@@ -72,8 +88,15 @@ public class HestiaMemoryDB implements HestiaDB {
 		if( null == debitCode ) {
 			throw new NoSuchElementException("no debitCodeId: " + debitCodeId);
 		}
+		if( null == description || description.isEmpty() ) {
+			description = debitCode.defaultDescription();
+		}
+		if( null == description ) {
+			description = debitCode.name();
+		}
 		MemoryDebit debit = new MemoryDebit(debitMap.lastKey()+1, slip, debitCode, description, unitPrice, quantity);
 		debitMap.put(debit.id(), debit);
+		modified = true;
 		return debit;
 	}
 	@Override
@@ -86,13 +109,124 @@ public class HestiaMemoryDB implements HestiaDB {
 		if( null == creditCode ) {
 			throw new NoSuchElementException("no creditCodeId: " + creditCodeId);
 		}
+		if( null == description || description.isEmpty() ) {
+			description = creditCode.defaultDescription();
+		}
+		if( null == description ) {
+			description = creditCode.name();
+		}
 		MemoryCredit credit = new MemoryCredit(creditMap.lastKey()+1, slip, creditCode, description, price);
 		creditMap.put(credit.id(), credit);
+		modified = true;
 		return credit;
 	}
 	
+	@Override
+	public void updateSlip(int slipId, int shopId, LocalDateTime slipDttm) {
+		MemorySlip slip =slipMap.get(slipId);
+		MemoryShop shop = shopMap.get(shopId);
+		if( null == slip ) {
+			throw new NoSuchElementException("no slipId: " + slipId);
+		}
+		if( null == shop ) {
+			throw new NoSuchElementException("no shopId: " + shopId);
+		}		
+		slip.shop(shop);
+		slip.slipDttm(slipDttm);
+		modified = true;
+	}
 	
-	public HestiaMemoryDB(Loader loader) throws Exception {
+	@Override
+	public void updateDebit(int debitId, int debitCodeId, String description, int unitPrice, int quantity) {
+		MemoryDebit debit =debitMap.get(debitId);
+		MemoryDebitCode debitCode = debitCodeMap.get(debitCodeId);
+		if( null == debit ) {
+			throw new NoSuchElementException("no debitId: " + debitId);
+		}
+		if( null == debitCode ) {
+			throw new NoSuchElementException("no debitCodeId: " + debitCodeId);
+		}
+		if( null == description || description.isEmpty() ) {
+			description = debitCode.defaultDescription();
+		}
+		if( null == description ) {
+			description = debitCode.name();
+		}
+		debit.debitCode(debitCode);
+		debit.description(description);
+		debit.unitPrice(unitPrice);
+		debit.quantity(quantity);
+		modified = true;
+	}
+	
+	@Override
+	public void updateCredit(int creditId, int creditCodeId, String description, int price) {
+		MemoryCredit credit =creditMap.get(creditId);
+		MemoryCreditCode creditCode = creditCodeMap.get(creditCodeId);
+		if( null == credit ) {
+			throw new NoSuchElementException("no creditId: " + creditId);
+		}
+		if( null == creditCode ) {
+			throw new NoSuchElementException("no creditCodeId: " + creditCodeId);
+		}
+		if( null == description || description.isEmpty() ) {
+			description = creditCode.defaultDescription();
+		}
+		if( null == description ) {
+			description = creditCode.name();
+		}
+		credit.creditCode(creditCode);
+		credit.description(description);
+		credit.price(price);
+		modified = true;
+	}
+	
+	@Override
+	public boolean deleteSlip(int slipId, boolean includeDetails) {
+		MemorySlip slip =slipMap.get(slipId);
+		if( null == slip ) {
+			throw new NoSuchElementException("no slipId: " + slipId);
+		}
+		List<Debit> debitList = this.retrieveDebitList(a->a.slip().id()==slipId);
+		List<Credit> creditList = this.retrieveCreditList(a->a.slip().id()==slipId);
+		if( includeDetails || (debitList.isEmpty() && creditList.isEmpty()) ) {
+			debitList.stream().forEach(a->debitMap.remove(a.id()));
+			creditList.stream().forEach(a->creditMap.remove(a.id()));
+			slipMap.remove(slip.id());
+			modified = true;
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	@Override
+	public void deleteDebit(int debitId) {
+		MemoryDebit debit =debitMap.get(debitId);
+		if( null == debit ) {
+			throw new NoSuchElementException("no debitId: " + debitId);
+		}
+		debitMap.remove(debitId);
+		modified = true;
+	}
+	
+	@Override
+	public void deleteCredit(int creditId) {
+		MemoryCredit credit =creditMap.get(creditId);
+		if( null == credit ) {
+			throw new NoSuchElementException("no creditId: " + creditId);
+		}
+		creditMap.remove(creditId);
+		modified = true;
+	}
+	
+	@Override
+	public String loadedDataName() {
+		return dataName;
+	}
+	
+	@Override
+	public void load(Loader loader) throws Exception {
 		assetMap = new TreeMap<>();
 		shopMap = new TreeMap<>();
 		debitCodeMap = new TreeMap<>();
@@ -100,14 +234,22 @@ public class HestiaMemoryDB implements HestiaDB {
 		slipMap = new TreeMap<>();
 		debitMap = new TreeMap<>();
 		creditMap = new TreeMap<>();
-		loader.load(this);
+		dataName = loader.load(this);
+		modified = false;
 	}
-	
-	public void dump(Dumper dumper) throws Exception {
+	@Override
+	public void save(Dumper dumper) throws Exception {
 		dumper.dump(this);
+		modified = false;
 	}
-	
+	@Override
+	public boolean isModified() {
+		return modified;
+	}
+
 	// definitions
+	private boolean modified;
+	private String dataName;
 	private TreeMap<Integer, MemoryAsset> assetMap;
 	private TreeMap<Integer, MemoryShop> shopMap;
 	private TreeMap<Integer, MemoryDebitCode> debitCodeMap;
@@ -117,19 +259,6 @@ public class HestiaMemoryDB implements HestiaDB {
 	private TreeMap<Integer, MemorySlip> slipMap;
 	private TreeMap<Integer, MemoryDebit> debitMap;
 	private TreeMap<Integer, MemoryCredit> creditMap;
-	
-	private <Target, Implement extends Target> List<Target> retrieveListFromMap(TreeMap<Integer, Implement> map, Predicate<Target> predicate, ToIntFunction<Target> keyExtractor) {
-		Supplier<List<Target>> supplier = ArrayList::new;
-		List<Target> result;
-		if( null == predicate ) {
-			result = supplier.get();
-			result.addAll(map.values());
-		} else {
-			result = map.values().stream().filter(predicate).collect(Collectors.toList());
-			result.sort(Comparator.comparingInt(keyExtractor));
-		}
-		return Collections.unmodifiableList(result);
-	}
 	
 	public static abstract class Dumper {
 		abstract protected void dump(HestiaMemoryDB db) throws Exception;		
@@ -156,7 +285,7 @@ public class HestiaMemoryDB implements HestiaDB {
 		}
 	}
 	public static abstract class Loader {
-		abstract protected void load(HestiaMemoryDB db) throws Exception;
+		abstract protected String load(HestiaMemoryDB db) throws Exception;
 		
 		final protected void addAsset(HestiaMemoryDB db, MemoryAsset asset) {
 			if( db.assetMap.containsKey(asset.id()) ) {

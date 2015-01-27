@@ -26,10 +26,10 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class CashflowController implements HestiaController {
-	private HestiaDB db;
+	private HestiaDB<?,?> db;
 	private VelocityRenderer renderer;
 	
-	public CashflowController(HestiaDB db, VelocityRenderer renderer) throws IOException {
+	public CashflowController(HestiaDB<?,?> db, VelocityRenderer renderer) throws IOException {
 		this.db = db;
 		this.renderer = renderer;
 	}

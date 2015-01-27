@@ -11,15 +11,12 @@ import java.util.TreeMap;
 import java.util.function.BiConsumer;
 
 
-public abstract class BinaryDataManager {
-	abstract protected ReadableByteChannel getReadableByteChannel() throws Exception;
-	abstract protected WritableByteChannel getWritableByteChannel() throws Exception;
-	
-	public HestiaMemoryDB.Loader getLoader() throws Exception {
-		return new Loader(getReadableByteChannel());
+public class BinaryDataManager {
+	public static HestiaMemoryDB.Loader getLoader(String name, ReadableByteChannel channel) throws Exception {
+		return new Loader(name, channel);
 	}
-	public HestiaMemoryDB.Dumper getDumper() throws Exception {
-		return new Dumper(getWritableByteChannel());
+	public static HestiaMemoryDB.Dumper getDumper(WritableByteChannel channel) throws Exception {
+		return new Dumper(channel);
 	}
 	
 	@FunctionalInterface
@@ -129,6 +126,7 @@ public abstract class BinaryDataManager {
 	}
 	
 	private static class Loader extends HestiaMemoryDB.Loader {
+		private String name;
 		private ReadableByteChannel source;
 		private TreeMap<Integer, MemoryAsset> assetMap = new TreeMap<>();
 		private TreeMap<Integer, MemoryShop> shopMap = new TreeMap<>();
@@ -138,10 +136,10 @@ public abstract class BinaryDataManager {
 		private TreeMap<Integer, MemoryDebit> debitMap = new TreeMap<>();
 		private TreeMap<Integer, MemoryCredit> creditMap = new TreeMap<>();
 		
-		private Loader(ReadableByteChannel source) {
+		private Loader(String name, ReadableByteChannel source) {
+			this.name = name;
 			this.source = source;
 		}
-		
 
 		private static <Data> void add(HestiaMemoryDB db, short type, int id, ByteBuffer buf, CreateFunction<Data> createFunc, BiConsumer<HestiaMemoryDB, Data> addFunc, TreeMap<Integer,Data> map) throws Exception {
 			Data data = createFunc.apply(type, id, buf);
@@ -150,7 +148,7 @@ public abstract class BinaryDataManager {
 		}
 		
 		@Override
-		protected void load(HestiaMemoryDB db) throws Exception {
+		protected String load(HestiaMemoryDB db) throws Exception {
 			try {
 				ByteBuffer buf = ByteBuffer.allocate(1024);
 				buf.clear();
@@ -190,6 +188,7 @@ public abstract class BinaryDataManager {
 			} finally {
 				source.close();
 			}
+			return name;
 		}
 		private static String getString(ByteBuffer buf) throws UnsupportedEncodingException {
 			short len = buf.getShort();

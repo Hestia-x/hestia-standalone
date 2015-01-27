@@ -23,10 +23,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
 public class AssetController implements HestiaController {
-	private HestiaDB db;
+	private HestiaDB<?,?> db;
 	private VelocityRenderer renderer;
 	
-	public AssetController(HestiaDB db, VelocityRenderer renderer) throws IOException {
+	public AssetController(HestiaDB<?,?> db, VelocityRenderer renderer) throws IOException {
 		this.db = db;
 		this.renderer = renderer;
 	}

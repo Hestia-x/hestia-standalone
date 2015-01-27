@@ -9,7 +9,7 @@ import huck.simplehttp.HttpResponse;
 import java.io.IOException;
 
 public class DefaultController implements HestiaController {
-	public DefaultController(HestiaDB db) throws IOException {
+	public DefaultController(HestiaDB<?,?> db) throws IOException {
 	}
 	
 	@Override

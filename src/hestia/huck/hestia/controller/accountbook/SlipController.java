@@ -25,10 +25,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class SlipController implements HestiaController {
-	private HestiaDB db;
+	private HestiaDB<?,?> db;
 	private VelocityRenderer renderer;
 	
-	public SlipController(HestiaDB db, VelocityRenderer renderer) throws IOException {
+	public SlipController(HestiaDB<?,?> db, VelocityRenderer renderer) throws IOException {
 		this.db = db;
 		this.renderer = renderer;
 	}

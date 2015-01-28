@@ -3,12 +3,9 @@ package huck.hestia.db.memory;
 import huck.common.jdbc.DBConnectionManager;
 import huck.hestia.db.Credit;
 import huck.hestia.db.Debit;
-import huck.hestia.db.Slip;
 
 import java.io.File;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class Transfer {
 	public static void main(String... args) throws Exception {
@@ -20,17 +17,22 @@ public class Transfer {
 		HestiaMemoryDB db = new HestiaMemoryDB();
 		db.load(new LoaderMysql(new DBConnectionManager(dbUrl, dbUser, dbPassword)));
 		
-		List<Slip> slipList = db.retrieveSlipList(a->a.slipDttm().getYear()==2014);
-		Set<Integer> slipIdSet = slipList.stream().collect(Collectors.mapping(a->a.id(), Collectors.toSet()));
-		List<Debit> debitList = db.retrieveDebitList(a->slipIdSet.contains(a.slip().id()));
-		List<Credit> creditList = db.retrieveCreditList(a->slipIdSet.contains(a.slip().id()));
+		List<Debit> debitList = db.retrieveDebitList(null);
 		for( Debit debit : debitList ) {
-			((MemoryDebit)debit).unitPrice(300000);
+			switch(debit.slip().id()) {
+			case 1:
+			case 78:
+				((MemoryDebit)debit).unitPrice(500000);
+			}
 		}
+		List<Credit> creditList = db.retrieveCreditList(null);
 		for( Credit credit : creditList ) {
-			((MemoryCredit)credit).price(100000);
-		}
-		
+			switch(credit.slip().id()) {
+			case 1:
+			case 78:
+				((MemoryCredit)credit).price(500000);
+			}
+		}		
 		db.save(FileDataManager.getDumper(new File("test.data")));
 	}
 }

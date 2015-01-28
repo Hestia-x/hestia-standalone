@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="kr">
+<head>
+	#printHeader()
+	<title>[Hestia] Data List</title>
+	<style>
+		th, td {
+			text-align: center;
+		}
+	</style>
+</head>
+<body>
+#printNavbar("system")
+<div class="container-fluid">
+<div class="row">
+	<div class="col-sm-1 col-md-1"></div>
+	<div class="col-sm-8 col-md-6 col-lg-5">
+		<table class="table table-striped table-condensed">
+		<caption>Select Data File</caption>
+		<thead>
+		<th>Name</th>
+		<th>lastModified</th>
+		<th>size</th>
+		</thead>
+		<tbody>
+		#foreach( $file in $fileList )
+		<tr><td><a href="/system/load/$file.name">$file.name</a></td><td>$file.lastModified</td><td>$file.size</td></tr>
+		#end
+		</tbody>
+		</table>
+	</div>
+</div>
+</div>
+</body>
+</html>

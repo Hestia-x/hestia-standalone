@@ -7,6 +7,7 @@ import huck.hestia.controller.accountbook.AccountBookController;
 import huck.hestia.controller.accountbook.AssetController;
 import huck.hestia.controller.accountbook.CashflowController;
 import huck.hestia.controller.accountbook.SlipController;
+import huck.hestia.controller.system.SystemController;
 import huck.hestia.db.memory.HestiaMemoryDB;
 import huck.hestia.db.memory.LoaderMysql;
 import huck.simplehttp.HttpException;
@@ -14,6 +15,7 @@ import huck.simplehttp.HttpProcessor;
 import huck.simplehttp.HttpRequest;
 import huck.simplehttp.HttpResponse;
 
+import java.io.File;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,6 +35,7 @@ public class HestiaHttpProcessor implements HttpProcessor {
 		String dbUrl = "jdbc:mysql://127.0.0.1:3306/account_book?characterEncoding=UTF-8";
 		String dbUser = "root";
 		String dbPassword = null;
+		File dataDir = new File("data");
 		
 		HestiaMemoryDB db = new HestiaMemoryDB();
 		db.load(new LoaderMysql(new DBConnectionManager(dbUrl, dbUser, dbPassword)));
@@ -48,10 +51,13 @@ public class HestiaHttpProcessor implements HttpProcessor {
 
 		controllerMap = new HashMap<>();
 		controllerMap.put("/", new DefaultController(db));
+		
 		controllerMap.put("/account_book/", new AccountBookController(db, renderer));
 		controllerMap.put("/account_book/asset/", new AssetController(db, renderer));
 		controllerMap.put("/account_book/cashflow/", new CashflowController(db, renderer));
 		controllerMap.put("/account_book/slip/", new SlipController(db, renderer));
+		
+		controllerMap.put("/system/", new SystemController(db, dataDir, renderer));
 		
 		controllerMap.put("/css/", new StaticResourceController());
 		controllerMap.put("/fonts/", new StaticResourceController());

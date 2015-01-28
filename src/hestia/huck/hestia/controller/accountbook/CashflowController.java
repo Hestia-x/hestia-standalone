@@ -36,6 +36,13 @@ public class CashflowController implements HestiaController {
 	
 	@Override
 	public HttpResponse controll(HttpRequest req, String matchPath) throws Exception {
+		String loadedDataName = db.loadedDataName();
+		if( null == loadedDataName ) {
+			return redirectTo("/system/load/");
+		} else {
+			req.setAttribute("loadedDataName", loadedDataName);
+		}
+		
 		RequestPath path = new RequestPath(req.getRequestPath().substring(matchPath.length()));
 		req.setAttribute("path", path);
 		ActionFunction actionFunction;

@@ -28,6 +28,8 @@ public class BinaryDataManager {
 	    void apply(ByteBuffer buf, Data data) throws Exception;
 	}
 	
+	private static int VERSION = 1;
+	
 	private static class Dumper extends HestiaMemoryDB.Dumper {
 		private WritableByteChannel output;
 		private Dumper(WritableByteChannel output) {
@@ -47,6 +49,13 @@ public class BinaryDataManager {
 		protected void dump(HestiaMemoryDB db) throws Exception {
 			try {
 				ByteBuffer buf = ByteBuffer.allocate(1024);
+				buf.clear();
+				buf.put("hestia".getBytes());
+				buf.putInt(VERSION);
+				buf.flip();
+				while( buf.hasRemaining() ) {
+					output.write(buf);
+				}
 				for( MemoryAsset asset : assetMap(db).values() ) {
 					write(buf, (short)101, asset.id(), asset, this::asset);
 				}
@@ -152,6 +161,26 @@ public class BinaryDataManager {
 			try {
 				ByteBuffer buf = ByteBuffer.allocate(1024);
 				buf.clear();
+				
+				int infoLen = 0;
+				while( infoLen < 10 ) {
+					int readLen = source.read(buf);
+					if( 0 > readLen ) {
+						throw new Exception("unknown format");
+					}
+					infoLen += readLen;
+				}
+				buf.flip();
+				byte[] formatName = new byte[6];
+				buf.get(formatName);
+				int version = buf.getInt();
+				if( !"hestia".equals(new String(formatName)) ) {
+					throw new Exception("unknown format");
+				}
+				if( version != VERSION ) {
+					throw new Exception("unknown version");
+				}
+				buf.compact();
 				
 				boolean finished = false;
 				read:

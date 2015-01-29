@@ -16,6 +16,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 
 import org.apache.log4j.Logger;
@@ -48,6 +50,8 @@ public class SystemController implements HestiaController {
 		RequestPath path = (RequestPath)req.getAttribute("path");
 		if( 1 == path.size() ) {
 			ArrayList<HashMap<String, String>> fileList = new ArrayList<>();
+			File[] children = dataDir.listFiles();
+			Arrays.sort(children, Comparator.comparingLong((File a)->a.lastModified()).reversed());
 			for( File f : dataDir.listFiles() ) {
 				if( f.isFile() ) {
 					HashMap<String, String> data = new HashMap<>();
@@ -70,6 +74,7 @@ public class SystemController implements HestiaController {
 		} else if( 2 == path.size() ) {
 			if( !db.isModified() || "true".equals(req.getParameter("lostchange")) ) {
 				String filename = path.get(1);
+				valueMap.put("filename", filename);
 				File file = new File(dataDir, filename);
 				try {
 					db.load(FileDataManager.getLoader(file));

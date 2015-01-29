@@ -234,8 +234,9 @@ public class HestiaMemoryDB implements HestiaDB<Loader, Dumper> {
 		slipMap = new TreeMap<>();
 		debitMap = new TreeMap<>();
 		creditMap = new TreeMap<>();
-		dataName = loader.load(this);
+		dataName = null;
 		modified = false;
+		dataName = loader.load(this);		
 	}
 	@Override
 	public void save(Dumper dumper) throws Exception {

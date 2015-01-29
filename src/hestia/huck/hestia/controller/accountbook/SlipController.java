@@ -84,8 +84,7 @@ public class SlipController implements HestiaController {
 		List<Credit> creditList = db.retrieveCreditList(a->slipIdSet.contains(a.slip().id()));
 		
 		ArrayList<Slip> slipList = new ArrayList<>(dbSlipList);
-		slipList.sort(Comparator.comparingInt(a->a.id()));
-		Collections.reverse(slipList);
+		slipList.sort(Comparator.comparingInt((Slip a)->a.id()).reversed());
 		
 		HashMap<Slip, HashMap<String, Integer>> result = new HashMap<>();
 		for( Slip slip : slipList ) {

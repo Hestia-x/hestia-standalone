@@ -46,7 +46,7 @@
 		padding:0 1.5em; /* indentation + .5em */
 		padding-right: 0;
 		line-height:2em; /* default list item's `line-height` */
-		color:#369;
+		color:#337ab7;
 		font-weight:bold;
 		position:relative;
 		display: block;
@@ -81,13 +81,10 @@
 		position: absolute;
 		opacity: 0;
 	}
-	.tree input[type=checkbox] + label {
-
-	}
-	.tree input[type=checkbox]:checked + label + span + ul {
+	.tree input[type=checkbox]:not(:checked) + label + span + ul {
 		display:none;
 	}
-	.tree input[type=checkbox]:checked + label::before {
+	.tree input[type=checkbox]:not(:checked) + label::before {
 		content: "(+) "
 	}
 
@@ -167,10 +164,10 @@
 	<div class="col-sm-1 col-md-1"></div>
 	<div class="col-sm-6 col-md-4 col-lg-3">
 <ul class="tree">
-	<li>Animals <span> 20.14</span>
+	<li><input type="checkbox" id="a1"/><label for="a1">Animals</label> <span> 20.14</span>
 		<ul>
 			<li>Birds <span> 20.14</span></li>
-			<li><input type="checkbox" id="aa"/><label for="aa">Test</label><span> 20.14</span>
+			<li><input type="checkbox" id="a2"/><label for="a2">Test</label><span> 20.14</span>
 				<ul>
 					<li>Elephant<span> 20.14</span></li>
 					<li>Mouse<span> 20.14</span></li>
@@ -179,12 +176,12 @@
 			<li>Reptiles</li>
 		</ul>
 	</li>
-	<li>Plants
+	<li><input type="checkbox" id="a3"/><label for="a3">Plants</label><span> 20.14</span>
 		<ul>
-			<li>Flowers
+			<li><input type="checkbox" id="a4"/><label for="a4">Flowers</label><span> 20.14</span>
 				<ul>
-					<li>Rose</li>
-					<li>Tulip</li>
+					<li>Rose<span> 20.14</span></li>
+					<li>Tulip<span> 20.14</span></li>
 				</ul>
 			</li>
 			<li>Trees</li>

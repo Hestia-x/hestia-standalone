@@ -55,7 +55,7 @@ public class AssetController implements HestiaController {
 	}
 	private String assetDetail(HttpRequest req, HashMap<String, Object> valueMap) throws Exception {
 		RequestPath path = (RequestPath)req.getAttribute("path");
-		int assetId = path.getInt(1, Integer.MIN_VALUE);
+		int assetId = path.getInt(0, Integer.MIN_VALUE);
 		if( !db.retrieveAssetList(a->a.id()==assetId).isEmpty() ) {
 			return assetHistory(req, valueMap, a->a.id()==assetId);	
 		}

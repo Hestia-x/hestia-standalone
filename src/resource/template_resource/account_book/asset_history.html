@@ -40,7 +40,7 @@
 		<tbody>
 			#foreach( $accountChange in $history.balanceChangeSummary.balanceChangeList )
 			<tr>
-				<td>$accountChange.accountName</td>
+				<td><a href="$accountChange.accountId">$accountChange.accountName</a></td>
 				<td>$__money.f($accountChange.before)</td>
 				<td>$__money.f($accountChange.change)</td>
 				<td><strong>$__money.f($accountChange.balance)</strong></td>
@@ -95,7 +95,7 @@
 				</td>
 				#end
 				#end
-				<td>$changeData.accountName</td>			
+				<td><a href="$changeData.accountId">$changeData.accountName</a></td>			
 				<td>$__money.f($changeData.change)</td>
 				<td><strong>$__money.f($changeData.balance)</strong></td>
 			</tr>

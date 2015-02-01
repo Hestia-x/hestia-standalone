@@ -23,6 +23,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class CashflowController implements HestiaController {
@@ -69,7 +70,7 @@ public class CashflowController implements HestiaController {
 		AccountHistory income = HistoryGenerator.createAccountHistory(fromDate, toDate, GroupType.MONTH, creditList, CreditCode.class, a->null==a.asset());
 		AccountHistory outcome = HistoryGenerator.createAccountHistory(fromDate, toDate, GroupType.MONTH, debitList, DebitCode.class, a->null==a.asset());
 		
-		HashMap<String, HashMap<String, Integer>> result = new HashMap<>();
+		TreeMap<String, HashMap<String, Integer>> result = new TreeMap<>();
 		for( BalanceChangeGroup group : income.getBalanceChangeGroupList() ) {
 			String month = group.getDate().format(DateTimeFormatter.ofPattern("uuuu-MM"));
 			int value = 0-group.getSummary().getChange();

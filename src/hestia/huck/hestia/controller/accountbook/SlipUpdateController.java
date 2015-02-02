@@ -3,6 +3,8 @@ package huck.hestia.controller.accountbook;
 import huck.hestia.HestiaController;
 import huck.hestia.RequestPath;
 import huck.hestia.VelocityRenderer;
+import huck.hestia.db.Credit;
+import huck.hestia.db.Debit;
 import huck.hestia.db.HestiaDB;
 import huck.hestia.db.Slip;
 import huck.simplehttp.HttpRequest;
@@ -52,7 +54,9 @@ public class SlipUpdateController implements HestiaController {
 				notFound(req);
 				return null;
 			}
-			originData = createFormDataFromSlip(slipList.get(0));
+			List<Debit> debitList = db.retrieveDebitList(a->a.slip().id()==slipId);
+			List<Credit> creditList = db.retrieveCreditList(a->a.slip().id()==slipId);
+			originData = createFormDataFromSlip(slipList.get(0), debitList, creditList);
 		default:
 			notFound(req);
 			return null;
@@ -73,10 +77,16 @@ public class SlipUpdateController implements HestiaController {
 			}
 		}
 		HashMap<String, Object> valueMap = new HashMap<String, Object>();
+		valueMap.put("shopList", db.retrieveShopList(null));
+		valueMap.put("debitCodeList", db.retrieveDebitCodeList(null));
+		valueMap.put("creditCodeList", db.retrieveCreditCodeList(null));
+		valueMap.put("originData", originData);
+		valueMap.put("editingData", editingData);
+		valueMap.put("errorData", errorData);
 		return renderer.render("/account_book/slip_form.html", req, valueMap);
 	}
 	
-	private HashMap<String, Object> createFormDataFromSlip(Slip slip) {
+	private HashMap<String, Object> createFormDataFromSlip(Slip slip, List<Debit> debitList, List<Credit> creditList) {
 		return null;
 	}
 

@@ -16,10 +16,14 @@ import huck.simplehttp.HttpRequest;
 import huck.simplehttp.HttpResponse;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.BufferOverflowException;
+import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -99,9 +103,51 @@ public class HestiaHttpProcessor implements HttpProcessor {
 		}
 		throw new HttpException(HttpResponse.Status.NOT_FOUND, "NOT FOUND: " + path);
 	}
+	
+	private static class PostFormProcessor implements WritableByteChannel {
+		private HttpRequest req;
+		private boolean open;
+		private	byte[] body;
+		private int position;
+		
+		public PostFormProcessor(HttpRequest req) {
+			this.req = req;
+			this.open = true;
+			this.body = new byte[req.getContentLength()];
+			this.position = 0;
+		}
+		@Override
+		public void close() throws IOException {
+			if( open ) {
+				open = false;
+				Map<String, String> paramMap = HttpRequest.parseQueryString(new String(body, 0, position, "UTF-8"));
+				req.setAttribute("bodyParam", paramMap);
+			}
+		}
+		@Override
+		public boolean isOpen() {
+			return open;
+		}
+		@Override
+		public int write(ByteBuffer src) throws IOException {
+			if( !open ) {
+				if( position == body.length ) {
+					throw new BufferOverflowException();
+				}
+				int len = Math.min(body.length-position, src.remaining());
+				src.get(body, position, len);
+				position += len;
+				return len;
+			}
+			throw new IOException("closed");
+		}
+	}
 
 	@Override
 	public WritableByteChannel getBodyProcessor(HttpRequest req) {
+		if( "POST".equalsIgnoreCase(req.getMethod()) && "application/x-www-form-urlencoded".equalsIgnoreCase(req.getHeader("Content-Type"))) {
+			return new PostFormProcessor(req);
+		}
 		return null;
 	}
 

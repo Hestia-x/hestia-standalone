@@ -1,6 +1,7 @@
 package huck.simplehttp;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
@@ -77,13 +78,14 @@ class HttpRequestParser {
 				boolean finished = true;
 				int contentLength = reqParseData.contentLength;
 				if( bodyProcessedBytes < contentLength ) {
-					if( null == bodyProcessorSupplier ) {
-						throw new HttpException(HttpResponse.Status.REQUEST_ENTITY_TOO_LARGE, "body messege is not allowed");
-					} else if( null == bodyProcessor ) {
-						bodyProcessor = bodyProcessorSupplier.getBodyProcessor(request);
-					}
 					if( null == bodyProcessor ) {
-						throw new HttpException(HttpResponse.Status.REQUEST_ENTITY_TOO_LARGE, "body messege is not allowed");
+						if( null == bodyProcessorSupplier ) {
+							throw new HttpException(HttpResponse.Status.REQUEST_ENTITY_TOO_LARGE, "body messege is not allowed");
+						} 
+						bodyProcessor = bodyProcessorSupplier.getBodyProcessor(request);
+						if( null == bodyProcessor ) {
+							throw new HttpException(HttpResponse.Status.REQUEST_ENTITY_TOO_LARGE, "body messege is not allowed");
+						}
 					}
 					ByteBuffer bodyPieceBuf = lineByteBuffer.asReadOnlyByteBuffer(contentLength-bodyProcessedBytes);
 					while( 0 < bodyPieceBuf.remaining() ) {
@@ -260,7 +262,7 @@ class HttpRequestParser {
 			length += srcLen;
 			return true;
 		}
-		public String getLine() {
+		public String getLine() throws UnsupportedEncodingException {
 			if( 0 >= length ) return null;
 			int linefeedPos = beginPos;
 			while( linefeedPos < endPos ) {
@@ -281,7 +283,7 @@ class HttpRequestParser {
 			if( 0 == lineLength ) {
 				line = "";
 			} else {
-				line = new String(buf, beginPos, lineLength);
+				line = new String(buf, beginPos, lineLength, "UTF-8");
 			}
 			
 			length -= (linefeedPos - beginPos + 1);

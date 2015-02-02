@@ -1,5 +1,7 @@
 package huck.simplehttp;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,9 +37,6 @@ public final class HttpRequest {
 		return queryString;
 	}	
 	public String getParameter(String name) {
-		if( null == paramMap ) {
-			parseQueryString();
-		}
 		return paramMap.get(name);
 	}
 
@@ -46,10 +45,10 @@ public final class HttpRequest {
 		return contentLength;
 	}	
 	public List<String> getHeaderList(String name) {
-		return header.get(name);	
+		return header.get(name.toLowerCase());	
 	}
 	public String getHeader(String name) {
-		List<String> valueList = header.get(name);
+		List<String> valueList = headerFindMap.get(name.toLowerCase());
 		if( null != valueList && !valueList.isEmpty() ) {
 			return valueList.get(0);
 		} else {
@@ -96,11 +95,12 @@ public final class HttpRequest {
 	
 	private int contentLength;
 	private Map<String, List<String>> header;
+	private Map<String, List<String>> headerFindMap;
 	private Map<String, List<String>> cookie;
 	
 	private HashMap<String, Object> attribute;
 	
-	public HttpRequest(HttpRequestData parseData) {
+	public HttpRequest(HttpRequestData parseData) throws UnsupportedEncodingException {
 		this.port = parseData.port;
 		this.method = parseData.method;
 		this.requestURI = parseData.uri;
@@ -109,19 +109,23 @@ public final class HttpRequest {
 		this.host = parseData.host;
 		this.requestPath = parseData.path;
 		this.queryString = parseData.queryString;
-		this.paramMap = null;
+		this.paramMap = parseQueryString(queryString);
 		
 		this.contentLength = parseData.contentLength;
 		
 		this.header = null;
+		this.headerFindMap = null;
 		this.cookie = null;
 		this.attribute = new HashMap<>();
 		
 		this.header = new HashMap<String, List<String>>();
+		this.headerFindMap = new HashMap<String, List<String>>();
 		for( Map.Entry<String, ArrayList<String>> entry : parseData.header.entrySet() ) {
 			this.header.put(entry.getKey(), Collections.unmodifiableList(entry.getValue()));
+			this.headerFindMap.put(entry.getKey().toLowerCase(), Collections.unmodifiableList(entry.getValue()));
 		}
 		this.header = Collections.unmodifiableMap(this.header);
+		this.headerFindMap = Collections.unmodifiableMap(this.headerFindMap);
 		
 		this.cookie = new HashMap<String, List<String>>();
 		for( Map.Entry<String, ArrayList<String>> entry : parseData.cookie.entrySet() ) {
@@ -130,25 +134,33 @@ public final class HttpRequest {
 		this.cookie = Collections.unmodifiableMap(this.cookie);
 	}
 	
-	private void parseQueryString() {
-		paramMap = new HashMap<>();
+	public static Map<String, String> parseQueryString(String queryString) throws UnsupportedEncodingException {
+		HashMap<String, String> result = new HashMap<>();
 		if( null == queryString || queryString.isEmpty() ) {
-			return;
-		}		
+			return result;
+		}
 		String[] params = queryString.split("&");		
 		for( String param : params ) {
 			if( null == param || param.isEmpty() ) {
 				continue;
 			}
 			int delimIdx = param.indexOf("=");
+			String name;
+			String value;
 			if( 0 > delimIdx ) {
-				paramMap.put(param, "");
+				name = param;
+				value = "";
 			} else if (delimIdx > 0) {
-				paramMap.put(param.substring(0, delimIdx), param.substring(delimIdx + 1));
+				name = param.substring(0, delimIdx);
+				value = param.substring(delimIdx + 1);
 			} else { // == 0
 				continue;
 			}
+			name = URLDecoder.decode(name, "UTF-8");
+			value = URLDecoder.decode(value, "UTF-8");
+			result.put(name, value);
 		}
+		return Collections.unmodifiableMap(result);
 	}
 	
 }

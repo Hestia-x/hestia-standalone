@@ -12,7 +12,7 @@
 	</style>
 </head>
 <body>
-#printNavbar("cashflow")
+#printNavbar("flow")
 <div class="container-fluid">
 <div class="row">
 	<div class="col-sm-1 col-md-1"></div>
@@ -28,14 +28,18 @@
 		<thead>
 			<tr>
 				<th class="col-xs-2">Name</th>
-				<th class="col-xs-1">Sum</th>
+				<th class="col-xs-1">Amount</th>
 			</tr>
 		</thead>
 		<tbody>
 			#foreach( $accountChange in $history.balanceChangeSummary.balanceChangeList )
 			<tr>
 				<td>$accountChange.accountName</td>
-				<td>$__money.f($accountChange.change)</td>
+				#if( "credit" == $type )
+				<td>$__money.f($accountChange.decrease)</td>
+				#elseif( "debit" == $type )
+				<td>$__money.f($accountChange.increase)</td>
+				#end
 			</tr>
 			#end
 		</tbody>
@@ -44,7 +48,7 @@
 </div>
 <div class="row">
 	<div class="col-sm-1 col-md-1"></div>
-	<div class="col-sm-10 col-md-8 col-lg-7">
+	<div class="col-sm-8 col-md-6 col-lg-4">
 	<table class="table table-hover table-bordered table-condensed">
 		<thead>
 			<tr>
@@ -52,7 +56,7 @@
 				#if( $history.groupType == "OCCURRENCE" )
 				<th class="col-xs-3">Shop</th>
 				#end
-				<th class="col-xs-1">Change</th>
+				<th class="col-xs-1">Amount</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -70,7 +74,12 @@
 					<a href="../../../slip/$groupData.id">$groupData.description ($groupData.id)</a>
 				</td>
 				#end
-				<td>$__money.f($changeData.change)</td>
+				#if( "credit" == $type )
+				<td>$__money.f($changeData.decrease)</td>
+				#elseif( "debit" == $type )
+				<td>$__money.f($changeData.increase)</td>
+				#end
+				
 			</tr>
 				#end
 			#end

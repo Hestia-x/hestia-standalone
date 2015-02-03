@@ -137,13 +137,6 @@ public class VelocityRenderer {
 			}
 			return result.reverse().toString();
 		}
-		public String r(Integer value) {
-			if( null == value ) {
-				return r((Long)null);
-			} else {
-				return r((long)(int)value);
-			}
-		}
 		public String r(Long value) {
 			return null==value?null:f(0-value);
 		}

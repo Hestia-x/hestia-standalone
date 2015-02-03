@@ -3,16 +3,18 @@ package huck.hestia.history;
 public class BalanceChange {
 	private int accountId;
 	private String accountName;
-	private int before;
-	private int change;
-	private int balance;
+	private int beginning;
+	private int increase;
+	private int decrease;
+	private int ending;
 	
-	public BalanceChange(int accountId, String accountName, int before, int change, int balance) {
+	public BalanceChange(int accountId, String accountName, int beginning, int increase, int decrease) {
 		this.accountId = accountId;
 		this.accountName = accountName;
-		this.before = before;
-		this.change = change;
-		this.balance = balance;
+		this.beginning = beginning;
+		this.increase = increase;
+		this.decrease = decrease;
+		this.ending = beginning+increase-decrease;
 	}
 	
 	public int getAccountId() {
@@ -29,24 +31,32 @@ public class BalanceChange {
 		this.accountName = accountName;
 	}
 
-	public int getBefore() {
-		return before;
+	public int getBeginning() {
+		return beginning;
 	}
-	public void setBefore(int before) {
-		this.before = before;
+	public void setBeginning(int beginning) {
+		this.beginning = beginning;
 	}
-	
-	public int getChange() {
-		return change;
+
+	public int getIncrease() {
+		return increase;
 	}
-	public void setChange(int change) {
-		this.change = change;
+	public void setIncrease(int increase) {
+		this.increase = increase;
 	}
-	
-	public int getBalance() {
-		return balance;
+
+	public int getDecrease() {
+		return decrease;
 	}
-	public void setBalance(int balance) {
-		this.balance = balance;
+	public void setDecrease(int decrease) {
+		this.decrease = decrease;
 	}
+
+	public int getEnding() {
+		return ending;
+	}
+	public void setEnding(int ending) {
+		this.ending = ending;
+	}
+
 }

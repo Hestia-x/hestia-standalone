@@ -39,8 +39,8 @@ public class HistoryGenerator {
 				targetSummary = new BalanceChange(target.accountId(), target.accountName(), 0, 0, 0);
 				targetSummaryMap.put(target.accountId(), targetSummary);
 			}
-			targetSummary.setBefore(targetSummary.getBefore() + change);
-			targetSummary.setBalance(targetSummary.getBalance() + change);
+			targetSummary.setBeginning(targetSummary.getBeginning() + change);
+			targetSummary.setEnding(targetSummary.getEnding() + change);
 		}
 
 		// 조회 기간 데이터는 시간 기준으로 정렬 후 Group에 맞춰 account별 변동 데이터 작성. 
@@ -76,13 +76,18 @@ public class HistoryGenerator {
 			}
 			BalanceChange changeData = nChangeMap.get(target.accountId());
 			if( null == changeData ) {
-				changeData = new BalanceChange(target.accountId(), target.accountName(), targetSummary.getBalance(), 0, targetSummary.getBalance());
+				changeData = new BalanceChange(target.accountId(), target.accountName(), targetSummary.getEnding(), 0, 0);
 				nChangeMap.put(target.accountId(), changeData);
 			}
-			targetSummary.setChange(targetSummary.getChange() + change);
-			targetSummary.setBalance(targetSummary.getBalance() + change);
-			changeData.setChange(changeData.getChange() + change);
-			changeData.setBalance(changeData.getBalance() + change);
+			if( change > 0 ) {
+				targetSummary.setIncrease(targetSummary.getIncrease() + change);
+				changeData.setIncrease(changeData.getIncrease() + change);
+			} else {
+				targetSummary.setDecrease(targetSummary.getDecrease() - change);
+				changeData.setDecrease(changeData.getDecrease() - change);
+			}
+			targetSummary.setEnding(targetSummary.getEnding() + change);
+			changeData.setEnding(changeData.getEnding() + change);
 		}
 		if( null != nGroup ) {
 			nGroup.setBalanceChangeList(new ArrayList<BalanceChange>(nChangeMap.values()));
@@ -91,7 +96,7 @@ public class HistoryGenerator {
 		// 변동도 없고 잔액도 없는 Account는 결과에서 제거.
 		ArrayList<Integer> removeAccountIdList = new ArrayList<>();
 		for( BalanceChange data : targetSummaryMap.values() ) {
-			if( !changedTargetIdSet.contains(data.getAccountId()) && 0 == data.getBefore() && 0 == data.getChange() && 0 == data.getBalance() ) {
+			if( !changedTargetIdSet.contains(data.getAccountId()) && 0 == data.getBeginning() && 0 == data.getIncrease() && 0 == data.getDecrease() ) {
 				removeAccountIdList.add(data.getAccountId());
 			}
 		}

@@ -19,7 +19,7 @@
 		<div class="collapse navbar-collapse" id="hestia-navbar-collapse-1">
 			<ul class="nav navbar-nav">
 				<li #if($menuName=="asset") class="active" #end><a href="/account_book/asset/">Asset</a></li>
-				<li #if($menuName=="cashflow") class="active" #end><a href="/account_book/cashflow/">Cashflow</a></li>
+				<li #if($menuName=="flow") class="active" #end><a href="/account_book/flow/">Flow</a></li>
 				<li #if($menuName=="slip") class="active" #end><a href="/account_book/slip/">Slip</a></li>
 			</ul>
 			<ul class="nav navbar-nav navbar-right">

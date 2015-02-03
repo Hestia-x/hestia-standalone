@@ -32,18 +32,20 @@
 		<thead>
 			<tr>
 				<th class="col-xs-2">Name</th>
-				<th class="col-xs-1">Before</th>
-				<th class="col-xs-1">Change</th>
-				<th class="col-xs-1">Balance</th>
+				<th class="col-xs-1">Beginning</th>
+				<th class="col-xs-1">Increase</th>
+				<th class="col-xs-1">Decrease</th>
+				<th class="col-xs-1">Ending</th>
 			</tr>
 		</thead>
 		<tbody>
 			#foreach( $accountChange in $history.balanceChangeSummary.balanceChangeList )
 			<tr>
 				<td><a href="$accountChange.accountId">$accountChange.accountName</a></td>
-				<td>$__money.f($accountChange.before)</td>
-				<td>$__money.f($accountChange.change)</td>
-				<td><strong>$__money.f($accountChange.balance)</strong></td>
+				<td>$__money.f($accountChange.beginning)</td>
+				<td>$__money.f($accountChange.increase)</td>
+				<td>$__money.f($accountChange.decrease)</td>
+				<td><strong>$__money.f($accountChange.ending)</strong></td>
 			</tr>
 			#end
 		</tbody>
@@ -51,9 +53,10 @@
 			<tr class="danger">
 				#set( $changeSummary = $history.balanceChangeSummary.summary )
 				<td>$changeSummary.accountName</td>
-				<td>$__money.f($changeSummary.before)</td>
-				<td>$__money.f($changeSummary.change)</td>
-				<td><strong>$__money.f($changeSummary.balance)</strong></td>
+				<td>$__money.f($changeSummary.beginning)</td>
+				<td>$__money.f($changeSummary.increase)</td>
+				<td>$__money.f($changeSummary.decrease)</td>
+				<td><strong>$__money.f($changeSummary.ending)</strong></td>
 			</tr>
 		</tfoot>
 	</table>
@@ -70,8 +73,9 @@
 				<th class="col-xs-3">Shop</th>
 				#end
 				<th class="col-xs-2">Name</th>
-				<th class="col-xs-1">Change</th>
-				<th class="col-xs-1">Balance</th>
+				<th class="col-xs-1">Increase</th>
+				<th class="col-xs-1">Decrease</th>
+				<th class="col-xs-1">Ending</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -96,8 +100,9 @@
 				#end
 				#end
 				<td><a href="$changeData.accountId">$changeData.accountName</a></td>			
-				<td>$__money.f($changeData.change)</td>
-				<td><strong>$__money.f($changeData.balance)</strong></td>
+				<td>$__money.f($changeData.increase)</td>
+				<td>$__money.f($changeData.decrease)</td>
+				<td><strong>$__money.f($changeData.ending)</strong></td>
 			</tr>
 				#end
 			#end

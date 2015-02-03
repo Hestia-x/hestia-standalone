@@ -26,11 +26,11 @@ import java.util.List;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class CashflowController implements HestiaController {
+public class FlowController implements HestiaController {
 	private HestiaDB<?,?> db;
 	private VelocityRenderer renderer;
 	
-	public CashflowController(HestiaDB<?,?> db, VelocityRenderer renderer) throws IOException {
+	public FlowController(HestiaDB<?,?> db, VelocityRenderer renderer) throws IOException {
 		this.db = db;
 		this.renderer = renderer;
 	}
@@ -73,14 +73,14 @@ public class CashflowController implements HestiaController {
 		TreeMap<String, HashMap<String, Integer>> result = new TreeMap<>();
 		for( BalanceChangeGroup group : income.getBalanceChangeGroupList() ) {
 			String month = group.getDate().format(DateTimeFormatter.ofPattern("uuuu-MM"));
-			int value = 0-group.getSummary().getChange();
+			int value = group.getSummary().getBeginning() - group.getSummary().getEnding();
 			HashMap<String, Integer> map = new HashMap<>();
 			map.put("income", value);
 			result.put(month, map);
 		}
 		for( BalanceChangeGroup group : outcome.getBalanceChangeGroupList() ) {
 			String month = group.getDate().format(DateTimeFormatter.ofPattern("uuuu-MM"));
-			int value = group.getSummary().getChange();
+			int value = group.getSummary().getEnding() - group.getSummary().getBeginning();
 			HashMap<String, Integer> map = result.get(month);
 			if( null == map ) {
 				map = new HashMap<>();
@@ -93,7 +93,7 @@ public class CashflowController implements HestiaController {
 			data.put("sum", data.get("income")-data.get("outcome"));
 		}
 		valueMap.put("result", result);
-		return "/account_book/cashflow.html";
+		return "/account_book/flow.html";
 	}
 	private String cashflowMonthly(HttpRequest req, HashMap<String, Object> valueMap) throws Exception {
 		RequestPath path = (RequestPath)req.getAttribute("path");
@@ -116,7 +116,7 @@ public class CashflowController implements HestiaController {
 		valueMap.put("to", endDate);
 		valueMap.put("income", income);
 		valueMap.put("outcome", outcome);
-		return "/account_book/cashflow_monthly.html";
+		return "/account_book/flow_monthly.html";
 	}
 	
 	private String cashflowMonthlyDetail(HttpRequest req, HashMap<String, Object> valueMap) throws Exception {
@@ -138,10 +138,12 @@ public class CashflowController implements HestiaController {
 		case "debit/":
 			List<Debit> debitList = db.retrieveDebitList(a -> a.occurrenceDttm().isBefore(toDttm)&&a.occurrenceDttm().isAfter(fromDttm));
 			history = HistoryGenerator.createAccountHistory(beginDate, endDate, GroupType.OCCURRENCE, debitList, DebitCode.class, a->id.equals(""+a.id()));
+			valueMap.put("type", "debit");
 			break;
 		case "credit/":
 			List<Credit> creditList = db.retrieveCreditList(a -> a.occurrenceDttm().isBefore(toDttm)&&a.occurrenceDttm().isAfter(fromDttm));
 			history = HistoryGenerator.createAccountHistory(beginDate, endDate, GroupType.OCCURRENCE, creditList, CreditCode.class, a->id.equals(""+a.id()));
+			valueMap.put("type", "credit");
 			break;
 		default:
 			notFound(req);
@@ -156,7 +158,7 @@ public class CashflowController implements HestiaController {
 		valueMap.put("to", endDate);
 		valueMap.put("history", history);
 		valueMap.put("dateGroupCountMap", dateGroupCountMap);
-		return "/account_book/cashflow_monthly_detail.html";
+		return "/account_book/flow_monthly_detail.html";
 	}
 }
 

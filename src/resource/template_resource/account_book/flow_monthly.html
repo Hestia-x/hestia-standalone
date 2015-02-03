@@ -92,7 +92,7 @@
 	</style>
 </head>
 <body>
-#printNavbar("cashflow")
+#printNavbar("flow")
 <div class="container-fluid">
 <div class="row">
 	<div class="col-sm-1 col-md-1"></div>
@@ -116,7 +116,7 @@
 			#foreach( $change in $income.balanceChangeList )
 			<tr>
 				<td><a href="./credit/$change.accountId">$change.accountName</a></td>
-				<td>$__money.r($change.change)</td>
+				<td>$__money.f($change.decrease)</td>
 			</tr>
 			#end
 		</tbody>
@@ -124,7 +124,7 @@
 			<tr class="danger">
 				#set( $changeSummary = $income.summary )
 				<td>$changeSummary.accountName</td>
-				<td>$__money.r($changeSummary.change)</td>
+				<td>$__money.f($changeSummary.decrease)</td>
 			</tr>
 		</tfoot>
 	</table>
@@ -145,7 +145,7 @@
 			#foreach( $change in $outcome.balanceChangeList )
 			<tr>
 				<td><a href="./debit/$change.accountId">$change.accountName</a></td>
-				<td>$__money.f($change.change)</td>
+				<td>$__money.f($change.increase)</td>
 			</tr>
 			#end
 		</tbody>
@@ -153,7 +153,7 @@
 			<tr class="danger">
 				#set( $changeSummary = $outcome.summary )
 				<td>$changeSummary.accountName</td>
-				<td>$__money.f($changeSummary.change)</td>
+				<td>$__money.f($changeSummary.increase)</td>
 			</tr>
 		</tfoot>
 	</table>

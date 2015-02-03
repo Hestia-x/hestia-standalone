@@ -38,16 +38,16 @@ public class BalanceChangeGroup {
 	}
 	
 	public BalanceChange getSummary() {
-		int beforeSum = 0;
-		int changeSum = 0;
-		int balanceSum = 0;
+		int beginning = 0;
+		int increase = 0;
+		int decrease = 0;
 		if( null != balanceChangeList ) {
 			for( BalanceChange data : balanceChangeList ) {
-				beforeSum += data.getBefore();
-				changeSum += data.getChange();
-				balanceSum += data.getBalance();
+				beginning += data.getBeginning();
+				increase += data.getIncrease();
+				decrease += data.getDecrease();
 			}
 		}
-		return new BalanceChange(-1, "Summary", beforeSum, changeSum, balanceSum);
+		return new BalanceChange(-1, "Summary", beginning, increase, decrease);
 	}
 }

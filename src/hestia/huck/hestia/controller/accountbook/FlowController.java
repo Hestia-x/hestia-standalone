@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TreeMap;
@@ -70,7 +71,7 @@ public class FlowController implements HestiaController {
 		AccountHistory income = HistoryGenerator.createAccountHistory(fromDate, toDate, GroupType.MONTH, creditList, CreditCode.class, a->null==a.asset());
 		AccountHistory outcome = HistoryGenerator.createAccountHistory(fromDate, toDate, GroupType.MONTH, debitList, DebitCode.class, a->null==a.asset());
 		
-		TreeMap<String, HashMap<String, Integer>> result = new TreeMap<>();
+		TreeMap<String, HashMap<String, Integer>> result = new TreeMap<>(Comparator.reverseOrder());
 		for( BalanceChangeGroup group : income.getBalanceChangeGroupList() ) {
 			String month = group.getDate().format(DateTimeFormatter.ofPattern("uuuu-MM"));
 			int value = group.getSummary().getBeginning() - group.getSummary().getEnding();

@@ -7,6 +7,7 @@ import huck.hestia.controller.accountbook.AccountBookController;
 import huck.hestia.controller.accountbook.AssetController;
 import huck.hestia.controller.accountbook.FlowController;
 import huck.hestia.controller.accountbook.SlipController;
+import huck.hestia.controller.accountbook.SlipUpdateController;
 import huck.hestia.controller.system.SystemController;
 import huck.hestia.db.memory.HestiaMemoryDB;
 import huck.hestia.db.memory.LoaderMysql;
@@ -60,6 +61,7 @@ public class HestiaHttpProcessor implements HttpProcessor {
 		controllerMap.put("/account_book/asset/", new AssetController(db, renderer));
 		controllerMap.put("/account_book/flow/", new FlowController(db, renderer));
 		controllerMap.put("/account_book/slip/", new SlipController(db, renderer));
+		controllerMap.put("/account_book/slipform/", new SlipUpdateController(db, renderer));
 		
 		controllerMap.put("/system/", new SystemController(db, dataDir, renderer));
 		
@@ -130,7 +132,7 @@ public class HestiaHttpProcessor implements HttpProcessor {
 		}
 		@Override
 		public int write(ByteBuffer src) throws IOException {
-			if( !open ) {
+			if( open ) {
 				if( position == body.length ) {
 					throw new BufferOverflowException();
 				}

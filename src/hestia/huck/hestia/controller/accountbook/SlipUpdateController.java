@@ -13,6 +13,7 @@ import huck.simplehttp.HttpResponse;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SlipUpdateController implements HestiaController {
 	private HestiaDB<?,?> db;
@@ -91,6 +92,12 @@ public class SlipUpdateController implements HestiaController {
 	}
 
 	private Slip processSave(HttpRequest req, HashMap<String, Object> originData, HashMap<String, Object> editingData, HashMap<String, String> errorData) throws Exception {
+		@SuppressWarnings("unchecked")
+		Map<String, String> param = (Map<String, String>)req.getAttribute("bodyParam");
+		if( null == param ) {
+			throw new Exception("aa");
+		}
+		System.out.println(param.get("test"));
 		return null;
 	}
 }

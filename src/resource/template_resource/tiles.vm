@@ -23,7 +23,7 @@
 				<li #if($menuName=="slip") class="active" #end><a href="/account_book/slip/">Slip</a></li>
 			</ul>
 			<ul class="nav navbar-nav navbar-right">
-				<li><button type="button" class="btn btn-default navbar-btn">Add Slip</button></li>
+				<li><button id="add_slip_btn" type="button" class="btn btn-default navbar-btn">Add Slip</button></li>
 				<li class="dropdown #if($menuName=="system") active #end">
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">System <span class="caret"></span></a>
 					<ul class="dropdown-menu" role="menu">
@@ -36,4 +36,9 @@
 		</div>
 	</div>
 </nav>
+<script>
+	$("#add_slip_btn").bind("click", function() {
+		document.location = "/account_book/slipform/";
+	});
+</script>
 #end

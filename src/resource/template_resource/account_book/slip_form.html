@@ -1,52 +1,132 @@
 <html>
 <head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
 	#printHeader()
 	<title>[Hestia] Cashflow</title>
 	<style>
 	th {
 		text-align: center;
 	}
-	td {
-		text-align: right;
+	
+	.code_form select{
+		width:66%;
+		display:inline-block;
+	}
+	.code_form input {
+		width:30%;
+		display:inline-block;
 	}
 	</style>
 </head>
 <body>
 #printNavbar("slip")
 <div class="container-fluid">
-
-<form>
 <div class="row">
 	<div class="col-sm-1 col-md-1"></div>
-	<div class="col-sm-2 col-md-2 col-lg-2">
+	<div class="col-sm-10 col-md-8 col-lg-7">
 		<div class="form-inline">
-			<select type="text" class="form-control" name="test">
-				<option>aa</option>
-				<option>bb</option>
-			</select>
-			<input type="text" class="form-control" name="test" placeholder="aa"/>
+			<form method="POST" action = ".">
+			<label>Purchase</label>
+			<input style="width:100px" type="text" class="form-control" name="debit_sum" value="1,000.00" readonly/>
+			<label style="margin-left:20px">Paying</label>
+			<input style="width:100px" type="text" class="form-control" name="credit_sum" value="3,000.00" readonly/>
+			<input type="hidden" name="data"/>
+			<input style="margin-left:20px" type="submit" class="form-control" value="RESET"/>
+			<input style="margin-left:10px" type="submit" class="form-control" value="SAVE"/>			
+			</form>
 		</div>
 	</div>
-	<div class="col-sm-1 col-md-1 col-lg-1">
-		<input type="text" class="form-control" name="test2"/>
+</div>
+<div class="row">&nbsp;</div>
+<form>
+<div class="row">
+	<div class="col-sm-offset-1 col-sm-11 col-md-9 col-lg-8">
+	<table class="table">
+		<caption>Purchase List</caption>
+		<thead>
+			<tr>
+			<th class="col-xs-3">Code</th>
+			<th class="col-xs-5">Description</th>
+			<th class="col-xs-2">Price</th>
+			<th class="col-xs-1">Qty.</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td class="code_form">
+					<select class="form-control">
+							<option>없음</option>
+							<option>식비</option>
+							<option>간식</option>
+					</select>
+					<input type="text" class="form-control" name="debit[0].code"/>
+				</td>
+				<td><input type="text" class="form-control" name="debit[0].description" placeholder="description"/></td>
+				<td><input type="text" class="form-control" name="debit[0].price" placeholder="price"/></td>
+				<td><input type="text" class="form-control" name="debit[0].quantity" placeholder="quantity" value="1"/></td>
+			</tr>
+			<tr>
+				<td class="code_form">
+					<select class="form-control">
+							<option>없음</option>
+							<option>식비</option>
+							<option>간식</option>
+					</select>
+					<input type="text" class="form-control" name="debit[0].code"/>
+				</td>
+				<td><input type="text" class="form-control" name="debit[0].description" placeholder="description"/></td>
+				<td><input type="text" class="form-control" name="debit[0].price" placeholder="price"/></td>
+				<td><input type="text" class="form-control" name="debit[0].quantity" placeholder="quantity" value="1"/></td>
+			</tr>
+			<tr>
+				<td colspan="4"><button id="debit_add_btn" class="btn btn-default btn-block">Add</button></td>
+			</tr>
+		</tbody>
+	</table>
 	</div>
 </div>
+<div class="row">&nbsp;</div>
 <div class="row">
-&nbsp;
-</div>
-<div class="row">
-	<div class="col-sm-1 col-md-1"></div>
-	<div class="col-sm-8 col-md-6 col-lg-5">
-		<input type="text" class="form-control" name="test"/>
-		<input type="text" class="form-control" name="test2"/>
-	</div>
-</div>
-</form>
-<form method="POST" action = ".">
-<div class="row">
-	<div class="col-sm-1 col-md-1"></div>
-	<div class="col-sm-8 col-md-6 col-lg-5">
-		<input type="submit"/>
+	<div class="col-sm-offset-1 col-sm-11 col-md-9 col-lg-8">
+	<table class="table">
+		<caption>Paying List</caption>
+		<thead>
+			<tr>
+			<th class="col-xs-3">Code</th>
+			<th class="col-xs-5">Description</th>
+			<th class="col-xs-2">Price</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td class="code_form">
+					<select class="form-control">
+							<option>없음</option>
+							<option>식비</option>
+							<option>간식</option>
+					</select>
+					<input type="text" class="form-control" name="debit[0].code"/>
+				</td>
+				<td><input type="text" class="form-control" name="credit[0].description" placeholder="description"/></td>
+				<td><input type="text" class="form-control" name="credit[0].price" placeholder="price"/></td>
+			</tr>
+			<tr>
+				<td class="code_form">
+					<select class="form-control">
+							<option>없음</option>
+							<option>식비</option>
+							<option>간식</option>
+					</select>
+					<input type="text" class="form-control" name="debit[0].code"/>
+				</td>
+				<td><input type="text" class="form-control" name="credit[0].description" placeholder="description"/></td>
+				<td><input type="text" class="form-control" name="credit[0].price" placeholder="price"/></td>
+			</tr>
+			<tr>
+				<td colspan="4"><button id="debit_add_btn" class="btn btn-default btn-block">Add</button></td>
+			</tr>
+		</tbody>
+	</table>
 	</div>
 </div>
 </form>

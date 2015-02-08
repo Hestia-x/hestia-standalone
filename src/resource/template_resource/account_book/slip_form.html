@@ -1,8 +1,8 @@
 <html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
 	#printHeader()
-	<title>[Hestia] Cashflow</title>
+	<title>[Hestia] Slip Form</title>
 	<style>
 	th {
 		text-align: center;
@@ -17,6 +17,329 @@
 		display:inline-block;
 	}
 	</style>
+	<script>
+	$(function(){
+		var money_scale = 2;
+
+		var debit_form_cnt = 0;
+		var credit_form_cnt = 0;
+
+		var debit_code_options;
+		var credit_code_options;
+		
+		var shop_code = [
+			{"code":100, "name": "shop1"},
+			{"code":200, "name": "shop2"},
+			{"code":300, "name": "shop3"},
+			{"code":400, "name": "shop4"},
+		];
+		var debit_code = [
+			{"code":-1, "name": "NONE"},
+			{"code":111, "name": "식비 일반", "default_description": 'test'},
+			{"code":112, "name": "식비 간식"},
+			{"code":113, "name": "식비 외식"},
+		];		
+		var credit_code = [
+			{"code":-1, "name": "NONE"},
+      		{"code":111, "name": "현금"},
+   			{"code":112, "name": "Deutschebank Main", "default_description": 'Deutschebank Main'},
+   			{"code":113, "name": "Amazon Credit Card"},
+		];
+
+		var origin_src = {
+			"slip": {
+				"id": 100,
+				"shop_id": 100,
+				"datetime": "2015-01-01 00:00:00"
+			},
+			"debit": [
+				{"id": 1, "code":111, "description":"description1", "price":10000, "quantity":1},
+				{"id": 2, "code":112, "description":"description2", "price":10001, "quantity":2},
+				{"id": 3, "code":113, "description":"description3", "price":10002, "quantity":3},
+			],
+			"credit": [
+				{"id": 1, "code":111, "description":"description1", "price":10000},
+				{"id": 2, "code":112, "description":"description2", "price":10001},
+				{"id": 3, "code":113, "description":"description3", "price":10002},
+			]
+		};
+		
+		function make_number_string(money, scale) {
+			var result = '';
+			var value = 0;
+			if( 'number' == typeof money ) {
+				value = money;
+			} else if( 0 < money.length ) {
+				value = parseInt(money);	
+			}
+			 
+			var point = scale;
+			var comma = point+3;
+			while( value > 0 || point >= 0 ) {
+				if( 0 == point && 0 < scale ) {
+					result += '.';
+				}
+				if( 0 == comma ) {
+					result += ',';
+					comma = 3;
+				}
+				result += (value % 10);
+				value = (value-(value%10)) / 10;
+				point--;
+				comma--;
+			}
+			return result.split('').reverse().join('');
+		}
+		function __event_check_number(event) {
+			var storage = event.data.storage;
+			var scale = event.data.scale;
+			var ch = event.which;			
+			if( 48 <= ch && ch <= 57 ) {
+				storage.value = parseInt(storage.value + (ch-48));
+			} else if( 96 <= ch && ch <= 105 ) {
+				storage.value = parseInt(storage.value + (ch-96));
+			} else if( 8 == ch|| 46 == ch ) { // backspace, delete
+				var origin = '' + storage.value;
+				var len = origin.length;
+				if( 1 < len ) {
+					storage.value = origin.substring(0, len-1);
+				} else {
+					storage.value = '0';
+				}
+			}
+			if( 9 == ch || 144 == ch || 116 == ch ) { // tab, numlock, tab
+				
+			} else {
+				event.preventDefault();
+			}
+			event.target.value = make_number_string(storage.value, scale);
+		}		
+		function __event_code_text_change(event) {
+			var basename = event.data.basename;
+			var code_list = event.data.code_list;
+			
+			var default_description = null;
+			var find = false;
+			for( var code in code_list ) {
+				if( code_list[code].code == event.target.value ) {
+					if( code_list[code].default_description ) {
+						default_description = code_list[code].default_description;
+					}
+					find = true;
+				}
+			}
+			if( find ) {
+				$('select[name=\''+basename+'.code_name\']').val(event.target.value);
+				if( default_description ) {
+					$('input[name=\''+basename+'.description\']').val(default_description);
+				}
+			} else {
+				$('select[name=\''+basename+'.code_name\']').val(-1);
+			}
+		}
+		function __event_code_select_change(event) {
+			var basename = event.data.basename;
+			var code_list = event.data.code_list;
+			
+			if( -1 == event.target.value ) {
+				$('input[name=\''+basename+'.code\']').val('');
+			} else {
+				$('input[name=\''+basename+'.code\']').val(event.target.value);
+			}
+			var default_description = null;
+			for( var code in code_list ) {
+				if( code_list[code].code == event.target.value ) {
+					if( code_list[code].default_description ) {
+						default_description = code_list[code].default_description;
+					}
+				}
+			}
+			if( default_description ) {
+				$('input[name=\''+basename+'.description\']').val(default_description);
+			}
+		};
+		
+		function add_debit() {
+			var form_id = debit_form_cnt;
+			var base = 'debit['+form_id+']';
+			debit_form_cnt += 1;
+			
+			var line = [
+			'<tr>',
+			'<td class="code_form">',
+			'	<input type="hidden" name="'+base+'.id" value="-1"/>',
+			'	<select class="form-control" name="'+base+'.code_name">',
+			debit_code_options,
+			'	</select>',
+			'	<input type="text" class="form-control" name="'+base+'.code"/>',
+			'</td>',
+			'<td><input type="text" class="form-control" name="'+base+'.description" placeholder="description"/></td>',
+			'<td>',
+			'	<input type="text" class="form-control" name="'+base+'.price_str" placeholder="price"/>',
+			'	<input type="hidden" name="'+base+'.price" value=""/>',
+			'</td>',
+			'<td>',
+			'	<input type="text" class="form-control" name="'+base+'.quantity_str" placeholder="quantity"/>',
+			'	<input type="hidden" name="'+base+'.quantity" value="1"/>',
+			'</td>',
+			'</tr>',
+			].join('\n');
+			$('#debit_list_add_point').before(line);			
+			
+			var __caret_to_end = function(event){ event.target.focus(); event.target.value = event.target.value + ''; };
+			var code_data = {"code_list":debit_code, "basename":base};
+			var price_data = {"scale":money_scale,"storage":$('input[name=\''+base+'.price\']')[0]};
+			var quantity_data = {"scale":0,"storage":$('input[name=\''+base+'.quantity\']')[0]};
+			
+			$('select[name=\''+base+'.code_name\']').on("change", code_data, function(event){__event_code_select_change(event);calc_debits();});
+			$('input[name=\''+base+'.code\']').on("change", code_data, function(event){__event_code_text_change(event);calc_debits();});
+			
+			$('input[name=\''+base+'.price_str\']').on("click", __caret_to_end);
+			$('input[name=\''+base+'.price_str\']').on("keydown", price_data, function(event){__event_check_number(event);calc_debits();});
+			
+			$('input[name=\''+base+'.quantity_str\']').on("click", __caret_to_end);			
+			$('input[name=\''+base+'.quantity_str\']').on("keydown", quantity_data, function(event){__event_check_number(event);calc_debits();});
+			
+			$('input[name=\''+base+'.price\']').val('0');
+			$('input[name=\''+base+'.price_str\']').val(make_number_string(0, money_scale));
+			$('input[name=\''+base+'.quantity\']').val('1');
+			$('input[name=\''+base+'.quantity_str\']').val(make_number_string(1, 0));
+			return form_id;
+		}
+		
+		function add_credit() {
+			var form_id = credit_form_cnt;
+			var base = 'credit['+form_id+']';
+			credit_form_cnt += 1;
+			
+			var line = [
+			'<tr>',
+			'<td class="code_form">',
+			'	<input type="hidden" name="'+base+'.id" value="-1"/>',
+			'	<select class="form-control" name="'+base+'.code_name">',
+			credit_code_options,
+			'	</select>',
+			'	<input type="text" class="form-control" name="'+base+'.code"/>',
+			'</td>',
+			'<td><input type="text" class="form-control" name="'+base+'.description" placeholder="description"/></td>',
+			'<td>',
+			'	<input type="text" class="form-control" name="'+base+'.price_str" placeholder="price"/>',
+			'	<input type="hidden" name="'+base+'.price" value=""/>',
+			'</td>',
+			'</tr>',
+			].join('\n');
+			$('#credit_list_add_point').before(line);
+			
+			var __caret_to_end = function(event){ event.target.focus(); event.target.value = event.target.value + ''; };
+			var code_data = {"code_list":credit_code, "basename":base};
+			var price_data = {"scale":money_scale,"storage":$('input[name=\''+base+'.price\']')[0]};
+			
+			$('select[name=\''+base+'.code_name\']').on("change", code_data, function(event){__event_code_select_change(event);calc_credits();} );
+			$('input[name=\''+base+'.code\']').on("change", code_data, function(event){__event_code_text_change(event);calc_credits();});
+			
+			$('input[name=\''+base+'.price_str\']').on("click", __caret_to_end);
+			$('input[name=\''+base+'.price_str\']').on("keydown", price_data, function(event){__event_check_number(event);calc_credits();});
+			
+			$('input[name=\''+base+'.price\']').val('0');
+			$('input[name=\''+base+'.price_str\']').val(make_number_string(0, money_scale));
+			return form_id;
+		}
+		
+		function check_equality() {
+			if( $('input[name=debit_sum]').val() != $('input[name=credit_sum]').val() ) {
+				$('#form_save').attr('class', 'btn btn-danger');
+				$('#form_save').attr('disabled', 'disabled');
+			} else {
+				$('#form_save').attr('class', 'btn btn-success');
+				$('#form_save').removeAttr('disabled');
+			}
+		}
+		function calc_debits() {
+			var sum = 0;
+			for( var i=0; i<debit_form_cnt; i++ ) {
+				var basename = 'debit['+i+']';
+				var code = $('select[name=\''+basename+'.code_name\']').val();
+				var description = $('input[name=\''+basename+'.description\']').val();
+				if( 0 > code || 0 == description.trim().length ) {
+					continue;
+				}
+				var price = parseInt($('input[name=\''+basename+'.price\']').val());
+				var quantity = parseInt($('input[name=\''+basename+'.quantity\']').val());
+				sum += (price*quantity);
+			}
+			$('input[name=debit_sum]').val(make_number_string(sum,2));
+			check_equality();
+		}
+		function calc_credits() {
+			var sum = 0;
+			for( var i=0; i<credit_form_cnt; i++ ) {
+				var code = $('select[name=\'credit['+i+'].code_name\']').val();
+				var description = $('input[name=\'credit['+i+'].description\']').val();
+				if( 0 > code || 0 == description.trim().length ) {
+					continue;
+				}
+				var price = parseInt($('input[name=\'credit['+i+'].price\']').val());
+				sum += price;
+			}
+			$('input[name=credit_sum]').val(make_number_string(sum,2));
+			check_equality();
+		}
+		
+		function reset_form() {
+			$('#debit_list').children(':not(#debit_list_add_point)').remove();
+			$('#credit_list').children(':not(#credit_list_add_point)').remove();
+			debit_form_cnt = 0;
+			credit_form_cnt = 0;
+			if( origin_src ) {
+				for( var debit_idx in origin_src.debit ) {
+					var form_id = add_debit();
+					var debit = origin_src.debit[debit_idx];
+					var basename = 'debit['+form_id+']';
+					$('input[name=\''+basename+'.id\']').val(debit.id);
+					$('input[name=\''+basename+'.code\']').val(debit.code);
+					$('select[name=\''+basename+'.code_name\']').val(debit.code);
+					$('input[name=\''+basename+'.description\']').val(debit.description);
+					$('input[name=\''+basename+'.price_str\']').val(make_number_string(debit.price, money_scale));
+					$('input[name=\''+basename+'.price\']').val(debit.price);
+					$('input[name=\''+basename+'.quantity_str\']').val(make_number_string(debit.quantity, 0));
+					$('input[name=\''+basename+'.quantity\']').val(debit.quantity);
+				}
+				for( var credit_idx in origin_src.credit ) {
+					var form_id = add_credit();
+					var credit = origin_src.credit[credit_idx];
+					var basename = 'credit['+form_id+']';
+					$('input[name=\''+basename+'.id\']').val(credit.id);
+					$('input[name=\''+basename+'.code\']').val(credit.code);
+					$('select[name=\''+basename+'.code_name\']').val(credit.code);
+					$('input[name=\''+basename+'.description\']').val(credit.description);
+					$('input[name=\''+basename+'.price_str\']').val(make_number_string(credit.price, money_scale));
+					$('input[name=\''+basename+'.price\']').val(credit.price);
+				}
+			} else {
+				add_debit();
+				add_debit();
+				add_credit();
+			}
+			calc_debits();
+			calc_credits();
+		}
+		
+		$( document ).ready(function() {
+			debit_code_options = '';
+			for( var code in debit_code ) {
+				debit_code_options += '<option value="'+debit_code[code].code+'">'+debit_code[code].name+'</option>\n';
+			}
+			credit_code_options = '';
+			for( var code in credit_code ) {
+				credit_code_options += '<option value="'+credit_code[code].code+'">'+credit_code[code].name+'</option>\n';
+			}
+			reset_form();
+			$('#debit_add_btn').click(function(){add_debit();})
+			$('#credit_add_btn').click(function(){add_credit();})
+			$('#form_reset').click(function(){reset_form();})
+		});
+	})
+	</script>
 </head>
 <body>
 #printNavbar("slip")
@@ -31,11 +354,13 @@
 			<label style="margin-left:20px">Paying:</label>
 			<input style="width:100px" type="text" class="form-control" name="credit_sum" value="3,000.00" readonly/>
 			<input type="hidden" name="data"/>
-			<input style="margin-left:20px" type="submit" class="form-control" value="RESET"/>
-			<input style="margin-left:10px" type="submit" class="form-control" value="SAVE"/>			
+			<input style="margin-left:20px" type="button" class="form-control" id="form_reset" value="RESET"/>
+			<input style="margin-left:10px" type="submit" class="form-control" id="form_save" value="SAVE"/>			
 		</div>
 	</div>
 </div>
+</form>
+<form id="input_form">
 <div class="row">&nbsp;</div>
 <div class="row">
 	<div class="col-sm-1 col-md-1"></div>
@@ -48,55 +373,26 @@
 				<option>간식</option>
 			</select>
 			<label style="margin-left:20px">Datetime:</label>
-			<input style="width:200px" type="text" class="form-control" name="credit_sum" value="2014-02-07 10:00:00"/>
-			<input type="hidden" name="data"/>
+			<input style="width:200px" type="text" class="form-control" name="datetime" value="2014-02-07 10:00:00"/>
 		</div>
 	</div>
 </div>
-</form>
 <div class="row">&nbsp;</div>
-<form>
 <div class="row">
 	<div class="col-sm-offset-1 col-sm-11 col-md-9 col-lg-8">
-	<table class="table">
+	<table class="table" >
 		<caption>Purchase List</caption>
 		<thead>
 			<tr>
-			<th class="col-xs-3">Code</th>
+			<th class="col-xs-4">Code</th>
 			<th class="col-xs-5">Description</th>
 			<th class="col-xs-2">Price</th>
 			<th class="col-xs-1">Qty.</th>
 			</tr>
 		</thead>
-		<tbody>
-			<tr>
-				<td class="code_form">
-					<select class="form-control">
-							<option>없음</option>
-							<option>식비</option>
-							<option>간식</option>
-					</select>
-					<input type="text" class="form-control" name="debit[0].code"/>
-				</td>
-				<td><input type="text" class="form-control" name="debit[0].description" placeholder="description"/></td>
-				<td><input type="text" class="form-control" name="debit[0].price" placeholder="price"/></td>
-				<td><input type="text" class="form-control" name="debit[0].quantity" placeholder="quantity" value="1"/></td>
-			</tr>
-			<tr>
-				<td class="code_form">
-					<select class="form-control">
-							<option>없음</option>
-							<option>식비</option>
-							<option>간식</option>
-					</select>
-					<input type="text" class="form-control" name="debit[1].code"/>
-				</td>
-				<td><input type="text" class="form-control" name="debit[1].description" placeholder="description"/></td>
-				<td><input type="text" class="form-control" name="debit[1].price" placeholder="price"/></td>
-				<td><input type="text" class="form-control" name="debit[1].quantity" placeholder="quantity" value="1"/></td>
-			</tr>
-			<tr>
-				<td colspan="4"><button id="debit_add_btn" class="btn btn-default btn-block">Add</button></td>
+		<tbody id="debit_list">
+			<tr id="debit_list_add_point">
+				<td colspan="4"><button type="button" id="debit_add_btn" class="btn btn-default btn-block">Add</button></td>
 			</tr>
 		</tbody>
 	</table>
@@ -109,38 +405,14 @@
 		<caption>Paying List</caption>
 		<thead>
 			<tr>
-			<th class="col-xs-3">Code</th>
+			<th class="col-xs-5">Code</th>
 			<th class="col-xs-5">Description</th>
 			<th class="col-xs-2">Price</th>
 			</tr>
 		</thead>
-		<tbody>
-			<tr>
-				<td class="code_form">
-					<select class="form-control">
-							<option>없음</option>
-							<option>식비</option>
-							<option>간식</option>
-					</select>
-					<input type="text" class="form-control" name="credit[0].code"/>
-				</td>
-				<td><input type="text" class="form-control" name="credit[0].description" placeholder="description"/></td>
-				<td><input type="text" class="form-control" name="credit[0].price" placeholder="price"/></td>
-			</tr>
-			<tr>
-				<td class="code_form">
-					<select class="form-control">
-							<option>없음</option>
-							<option>식비</option>
-							<option>간식</option>
-					</select>
-					<input type="text" class="form-control" name="credit[1].code"/>
-				</td>
-				<td><input type="text" class="form-control" name="credit[1].description" placeholder="description"/></td>
-				<td><input type="text" class="form-control" name="credit[1].price" placeholder="price"/></td>
-			</tr>
-			<tr>
-				<td colspan="4"><button id="credit_add_btn" class="btn btn-default btn-block">Add</button></td>
+		<tbody id="credit_list">
+			<tr id="credit_list_add_point">
+				<td colspan="4"><button type="button" id="credit_add_btn" class="btn btn-default btn-block">Add</button></td>
 			</tr>
 		</tbody>
 	</table>

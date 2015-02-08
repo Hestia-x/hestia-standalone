@@ -14,6 +14,7 @@ public class StaticResourceController implements HestiaController {
 	public StaticResourceController() {
 		mimeMap.put("css", "text/css");
 		mimeMap.put("js", "text/javascript");
+		mimeMap.put("png", "image/png");
 	}
 	
 	@Override

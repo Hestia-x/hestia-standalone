@@ -92,30 +92,42 @@
 			}
 			return result.split('').reverse().join('');
 		}
-		function __event_check_number(event) {
+		function __event_focusin_number(event) {
+			var data = event.data.storage.value;
+			var scale = event.data.scale;
+			event.target.value = '' + data/Math.pow(10, scale);
+		};
+		function __event_focusout_number(event) {
+			var input = event.target.value;
+			var scale = event.data.scale;
+			input = Math.floor(input * Math.pow(10, scale));
+			event.target.value = make_number_string(input, scale);
+			event.data.storage.value = input;
+		}
+		function __event_check_number_input(event) {
 			var storage = event.data.storage;
 			var scale = event.data.scale;
 			var ch = event.which;			
 			if( 48 <= ch && ch <= 57 ) {
-				storage.value = parseInt(storage.value + (ch-48));
 			} else if( 96 <= ch && ch <= 105 ) {
-				storage.value = parseInt(storage.value + (ch-96));
+			} else if( event.data.scale > 0 && (190 == ch || 110 == ch) ) { // . numpad .
 			} else if( 8 == ch|| 46 == ch ) { // backspace, delete
-				var origin = '' + storage.value;
-				var len = origin.length;
-				if( 1 < len ) {
-					storage.value = origin.substring(0, len-1);
-				} else {
-					storage.value = '0';
-				}
-			}
-			if( 9 == ch || 144 == ch || 116 == ch ) { // tab, numlock, tab
-				
+			} else if( 9 == ch || 144 == ch || 116 == ch ) { // tab, numlock, f5
 			} else {
 				event.preventDefault();
 			}
-			event.target.value = make_number_string(storage.value, scale);
-		}		
+		}
+		function __event_check_key_next(event) {
+			if( 13 == event.which ) {
+				var next_form = $(event.data.next_form);
+				if( 0 < next_form.length ) {
+					next_form.focus();
+				} else if(event.data.default_next_func) {
+					event.data.default_next_func();
+					$(event.data.next_form).focus();
+				}
+			}
+		}
 		function __event_code_text_change(event) {
 			var basename = event.data.basename;
 			var code_list = event.data.code_list;
@@ -190,17 +202,36 @@
 			
 			var __caret_to_end = function(event){ event.target.focus(); event.target.value = event.target.value + ''; };
 			var code_data = {"code_list":debit_code, "basename":base};
-			var price_data = {"scale":money_scale,"storage":$('input[name=\''+base+'.price\']')[0]};
-			var quantity_data = {"scale":0,"storage":$('input[name=\''+base+'.quantity\']')[0]};
+			var price_data = {
+				"scale":money_scale,
+				"storage":$('input[name=\''+base+'.price\']')[0],
+				"next_form":'input[name=\''+base+'.quantity_str\']',
+			};
+			var quantity_data = {
+				"scale":0,
+				"storage":$('input[name=\''+base+'.quantity\']')[0],
+				"next_form":'input[name=\'debit['+(form_id+1)+'].description\']',
+				"default_next_func": add_debit
+			};
 			
 			$('select[name=\''+base+'.code_name\']').on("change", code_data, function(event){__event_code_select_change(event);calc_debits();});
 			$('input[name=\''+base+'.code\']').on("change", code_data, function(event){__event_code_text_change(event);calc_debits();});
+
+			$('input[name=\''+base+'.description\']').on("keydown", {"next_form":'input[name=\''+base+'.price_str\']'}, __event_check_key_next);
 			
-			$('input[name=\''+base+'.price_str\']').on("click", __caret_to_end);
-			$('input[name=\''+base+'.price_str\']').on("keydown", price_data, function(event){__event_check_number(event);calc_debits();});
+			$('input[name=\''+base+'.price_str\']').on("focusin", price_data, __event_focusin_number);
+			$('input[name=\''+base+'.price_str\']').on("focusin", calc_debits);
+			$('input[name=\''+base+'.price_str\']').on("focusout", price_data, __event_focusout_number);
+			$('input[name=\''+base+'.price_str\']').on("focusout", calc_debits);
+			$('input[name=\''+base+'.price_str\']').on("keydown", price_data, __event_check_number_input);
+			$('input[name=\''+base+'.price_str\']').on("keydown", price_data, __event_check_key_next);
 			
-			$('input[name=\''+base+'.quantity_str\']').on("click", __caret_to_end);			
-			$('input[name=\''+base+'.quantity_str\']').on("keydown", quantity_data, function(event){__event_check_number(event);calc_debits();});
+			$('input[name=\''+base+'.quantity_str\']').on("focusin", quantity_data, __event_focusin_number);
+			$('input[name=\''+base+'.quantity_str\']').on("focusin", calc_debits);
+			$('input[name=\''+base+'.quantity_str\']').on("focusout", quantity_data, __event_focusout_number);
+			$('input[name=\''+base+'.quantity_str\']').on("focusout", calc_debits);
+			$('input[name=\''+base+'.quantity_str\']').on("keydown", quantity_data, __event_check_number_input);
+			$('input[name=\''+base+'.quantity_str\']').on("keydown", quantity_data, __event_check_key_next);
 			
 			$('input[name=\''+base+'.price\']').val('0');
 			$('input[name=\''+base+'.price_str\']').val(make_number_string(0, money_scale));
@@ -239,8 +270,9 @@
 			$('select[name=\''+base+'.code_name\']').on("change", code_data, function(event){__event_code_select_change(event);calc_credits();} );
 			$('input[name=\''+base+'.code\']').on("change", code_data, function(event){__event_code_text_change(event);calc_credits();});
 			
-			$('input[name=\''+base+'.price_str\']').on("click", __caret_to_end);
-			$('input[name=\''+base+'.price_str\']').on("keydown", price_data, function(event){__event_check_number(event);calc_credits();});
+			$('input[name=\''+base+'.price_str\']').on("focusin", price_data, function(event){__event_focusin_number(event);calc_credits();});
+			$('input[name=\''+base+'.price_str\']').on("focusout", price_data, function(event){__event_focusout_number(event);calc_credits();});
+			$('input[name=\''+base+'.price_str\']').on("keydown", price_data, function(event){__event_check_number_input(event);});
 			
 			$('input[name=\''+base+'.price\']').val('0');
 			$('input[name=\''+base+'.price_str\']').val(make_number_string(0, money_scale));

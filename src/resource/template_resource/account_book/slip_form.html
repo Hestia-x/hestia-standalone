@@ -100,7 +100,10 @@
 			} else {
 				event.target.value = '' + data;
 			}
-		};
+		}
+		function __event_select_all(event) {
+			event.target.setSelectionRange(0, event.target.value.length);			
+		}
 		function __event_focusout_number(event) {
 			var input = event.target.value;
 			var scale = event.data.scale;
@@ -117,6 +120,7 @@
 			} else if( event.data.scale > 0 && (190 == ch || 110 == ch) ) { // . numpad .
 			} else if( 8 == ch|| 46 == ch ) { // backspace, delete
 			} else if( 9 == ch || 144 == ch || 116 == ch ) { // tab, numlock, f5
+			} else if( 37==ch || 39 == ch || 36 == ch || 35 == ch ) { // left, right, home, end
 			} else {
 				event.preventDefault();
 			}
@@ -222,8 +226,10 @@
 			$('input[name=\''+base+'.code\']').on("change", code_data, function(event){__event_code_text_change(event);calc_debits();});
 
 			$('input[name=\''+base+'.description\']').on("keydown", {"next_form":'input[name=\''+base+'.price_str\']'}, __event_check_key_next);
+			$('input[name=\''+base+'.description\']').on("focusin", __event_select_all);
 			
 			$('input[name=\''+base+'.price_str\']').on("focusin", price_data, __event_focusin_number);
+			$('input[name=\''+base+'.price_str\']').on("focusin", __event_select_all);
 			$('input[name=\''+base+'.price_str\']').on("focusin", calc_debits);
 			$('input[name=\''+base+'.price_str\']').on("focusout", price_data, __event_focusout_number);
 			$('input[name=\''+base+'.price_str\']').on("focusout", calc_debits);
@@ -231,6 +237,7 @@
 			$('input[name=\''+base+'.price_str\']').on("keydown", price_data, __event_check_key_next);
 			
 			$('input[name=\''+base+'.quantity_str\']').on("focusin", quantity_data, __event_focusin_number);
+			$('input[name=\''+base+'.quantity_str\']').on("focusin", __event_select_all);
 			$('input[name=\''+base+'.quantity_str\']').on("focusin", calc_debits);
 			$('input[name=\''+base+'.quantity_str\']').on("focusout", quantity_data, __event_focusout_number);
 			$('input[name=\''+base+'.quantity_str\']').on("focusout", calc_debits);

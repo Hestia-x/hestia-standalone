@@ -93,9 +93,13 @@
 			return result.split('').reverse().join('');
 		}
 		function __event_focusin_number(event) {
-			var data = event.data.storage.value;
 			var scale = event.data.scale;
-			event.target.value = '' + data/Math.pow(10, scale);
+			var data = event.data.storage.value/Math.pow(10, scale);			
+			if( 0 == data ) {
+				event.target.value = '';
+			} else {
+				event.target.value = '' + data;
+			}
 		};
 		function __event_focusout_number(event) {
 			var input = event.target.value;

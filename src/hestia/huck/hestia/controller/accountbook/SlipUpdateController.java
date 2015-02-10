@@ -11,9 +11,13 @@ import huck.simplehttp.HttpRequest;
 import huck.simplehttp.HttpResponse;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.json.JSONObject;
 
 public class SlipUpdateController implements HestiaController {
 	private HestiaDB<?,?> db;
@@ -58,6 +62,7 @@ public class SlipUpdateController implements HestiaController {
 			List<Debit> debitList = db.retrieveDebitList(a->a.slip().id()==slipId);
 			List<Credit> creditList = db.retrieveCreditList(a->a.slip().id()==slipId);
 			originData = createFormDataFromSlip(slipList.get(0), debitList, creditList);
+			break;
 		default:
 			notFound(req);
 			return null;
@@ -77,18 +82,53 @@ public class SlipUpdateController implements HestiaController {
 				editingData = null;
 			}
 		}
+		String originDataString = "null";
+		if( null != originData ) {
+			originDataString = new JSONObject(originData).toString();
+		}
 		HashMap<String, Object> valueMap = new HashMap<String, Object>();
 		valueMap.put("shopList", db.retrieveShopList(null));
 		valueMap.put("debitCodeList", db.retrieveDebitCodeList(null));
 		valueMap.put("creditCodeList", db.retrieveCreditCodeList(null));
-		valueMap.put("originData", originData);
+		valueMap.put("originData", originDataString);
 		valueMap.put("editingData", editingData);
 		valueMap.put("errorData", errorData);
 		return renderer.render("/account_book/slip_form.html", req, valueMap);
 	}
 	
 	private HashMap<String, Object> createFormDataFromSlip(Slip slip, List<Debit> debitList, List<Credit> creditList) {
-		return null;
+		LinkedHashMap<String, Object> result = new LinkedHashMap<>();
+		
+		LinkedHashMap<String, Object> slipData = new LinkedHashMap<>();
+		slipData.put("id", slip.id());
+		slipData.put("shop_id", slip.shop().id());
+		slipData.put("datetime", slip.slipDttm());
+		result.put("slip", slipData);
+		
+		ArrayList<Object> debitDataList = new ArrayList<>();
+		for( Debit debit : debitList ) {
+			LinkedHashMap<String, Object> debitData = new LinkedHashMap<>();
+			debitData.put("id", debit.id());
+			debitData.put("code", debit.debitCode().id());
+			debitData.put("description", debit.description());
+			debitData.put("price", debit.unitPrice());
+			debitData.put("quantity", debit.quantity());
+			debitDataList.add(debitData);
+		}
+		result.put("debit", debitDataList);
+		
+		ArrayList<Object> creditDataList = new ArrayList<>();
+		for( Credit credit : creditList ) {
+			LinkedHashMap<String, Object> creditData = new LinkedHashMap<>();
+			creditData.put("id", credit.id());
+			creditData.put("code", credit.creditCode().id());
+			creditData.put("description", credit.description());
+			creditData.put("price", credit.price());
+			creditDataList.add(creditData);
+		}
+		result.put("credit", creditDataList);
+		
+		return result;
 	}
 
 	private Slip processSave(HttpRequest req, HashMap<String, Object> originData, HashMap<String, Object> editingData, HashMap<String, String> errorData) throws Exception {

@@ -30,41 +30,24 @@
 		var credit_code_options;
 		
 		var shop_code = [
-			{"code":100, "name": "shop1"},
-			{"code":200, "name": "shop2"},
-			{"code":300, "name": "shop3"},
-			{"code":400, "name": "shop4"},
+#foreach($code in $shopList)
+			{"code":$code.id(), "name": "$code.name()"},
+#end
 		];
 		var debit_code = [
 			{"code":-1, "name": "NONE"},
-			{"code":111, "name": "식비 일반", "default_description": 'test'},
-			{"code":112, "name": "식비 간식"},
-			{"code":113, "name": "식비 외식"},
+#foreach($code in $debitCodeList)
+			{"code":$code.id(), "name": "$code.name()", "default_description": "$!code.defaultDescription()"},
+#end
 		];		
 		var credit_code = [
 			{"code":-1, "name": "NONE"},
-      		{"code":111, "name": "현금"},
-   			{"code":112, "name": "Deutschebank Main", "default_description": 'Deutschebank Main'},
-   			{"code":113, "name": "Amazon Credit Card"},
+#foreach($code in $creditCodeList)
+			{"code":$code.id(), "name": "$code.name()", "default_description": "$!code.defaultDescription()"},
+#end
 		];
 
-		var origin_src = {
-			"slip": {
-				"id": 100,
-				"shop_id": 100,
-				"datetime": "2015-01-01 00:00:00"
-			},
-			"debit": [
-				{"id": 1, "code":111, "description":"description1", "price":10000, "quantity":1},
-				{"id": 2, "code":112, "description":"description2", "price":10001, "quantity":2},
-				{"id": 3, "code":113, "description":"description3", "price":10002, "quantity":3},
-			],
-			"credit": [
-				{"id": 1, "code":111, "description":"description1", "price":10000},
-				{"id": 2, "code":112, "description":"description2", "price":10001},
-				{"id": 3, "code":113, "description":"description3", "price":10002},
-			]
-		};
+		var origin_src = $!originData;
 		
 		function make_number_string(money, scale) {
 			var result = '';
@@ -151,12 +134,12 @@
 				}
 			}
 			if( find ) {
-				$('select[name=\''+basename+'.code_name\']').val(event.target.value);
+				$('select[name="'+basename+'.code_name"]').val(event.target.value);
 				if( default_description ) {
-					$('input[name=\''+basename+'.description\']').val(default_description);
+					$('input[name="'+basename+'.description"]').val(default_description);
 				}
 			} else {
-				$('select[name=\''+basename+'.code_name\']').val(-1);
+				$('select[name="'+basename+'.code_name"]').val(-1);
 			}
 		}
 		function __event_code_select_change(event) {
@@ -164,9 +147,9 @@
 			var code_list = event.data.code_list;
 			
 			if( -1 == event.target.value ) {
-				$('input[name=\''+basename+'.code\']').val('');
+				$('input[name="'+basename+'.code"]').val('');
 			} else {
-				$('input[name=\''+basename+'.code\']').val(event.target.value);
+				$('input[name="'+basename+'.code"]').val(event.target.value);
 			}
 			var default_description = null;
 			for( var code in code_list ) {
@@ -177,116 +160,114 @@
 				}
 			}
 			if( default_description ) {
-				$('input[name=\''+basename+'.description\']').val(default_description);
+				$('input[name="'+basename+'.description"]').val(default_description);
 			}
 		};
 		
 		function add_debit() {
 			var form_id = debit_form_cnt;
-			var base = 'debit['+form_id+']';
 			debit_form_cnt += 1;
 			
 			var line = [
 			'<tr>',
 			'<td class="code_form">',
-			'	<input type="hidden" name="'+base+'.id" value="-1"/>',
-			'	<select class="form-control" name="'+base+'.code_name">',
+			'	<input type="hidden" name="debit'+form_id+'.id" value="-1"/>',
+			'	<select class="form-control" name="debit'+form_id+'.code_name">',
 			debit_code_options,
 			'	</select>',
-			'	<input type="text" class="form-control" name="'+base+'.code"/>',
+			'	<input type="text" class="form-control" name="debit'+form_id+'.code"/>',
 			'</td>',
-			'<td><input type="text" class="form-control" name="'+base+'.description" placeholder="description"/></td>',
+			'<td><input type="text" class="form-control" name="debit'+form_id+'.description" placeholder="description"/></td>',
 			'<td>',
-			'	<input type="text" class="form-control" name="'+base+'.price_str" placeholder="price"/>',
-			'	<input type="hidden" name="'+base+'.price" value=""/>',
+			'	<input type="text" class="form-control" name="debit'+form_id+'.price_str" placeholder="price"/>',
+			'	<input type="hidden" name="debit'+form_id+'.price" value=""/>',
 			'</td>',
 			'<td>',
-			'	<input type="text" class="form-control" name="'+base+'.quantity_str" placeholder="quantity"/>',
-			'	<input type="hidden" name="'+base+'.quantity" value="1"/>',
+			'	<input type="text" class="form-control" name="debit'+form_id+'.quantity_str" placeholder="quantity"/>',
+			'	<input type="hidden" name="debit'+form_id+'.quantity" value="1"/>',
 			'</td>',
 			'</tr>',
 			].join('\n');
 			$('#debit_list_add_point').before(line);			
 			
 			var __caret_to_end = function(event){ event.target.focus(); event.target.value = event.target.value + ''; };
-			var code_data = {"code_list":debit_code, "basename":base};
+			var code_data = {"code_list":debit_code, "basename":"debit"+form_id};
 			var price_data = {
 				"scale":money_scale,
-				"storage":$('input[name=\''+base+'.price\']')[0],
-				"next_form":'input[name=\''+base+'.quantity_str\']',
+				"storage":$('input[name="debit'+form_id+'.price"]')[0],
+				"next_form":'input[name="debit'+form_id+'.quantity_str"]',
 			};
 			var quantity_data = {
 				"scale":0,
-				"storage":$('input[name=\''+base+'.quantity\']')[0],
-				"next_form":'input[name=\'debit['+(form_id+1)+'].description\']',
+				"storage":$('input[name="debit'+form_id+'.quantity"]')[0],
+				"next_form":'input[name="debit'+(form_id+1)+'.description"]',
 				"default_next_func": add_debit
 			};
 			
-			$('select[name=\''+base+'.code_name\']').on("change", code_data, function(event){__event_code_select_change(event);calc_debits();});
-			$('input[name=\''+base+'.code\']').on("change", code_data, function(event){__event_code_text_change(event);calc_debits();});
+			$('select[name="debit'+form_id+'.code_name"]').on("change", code_data, function(event){__event_code_select_change(event);calc_debits();});
+			$('input[name="debit'+form_id+'.code"]').on("change", code_data, function(event){__event_code_text_change(event);calc_debits();});
 
-			$('input[name=\''+base+'.description\']').on("keydown", {"next_form":'input[name=\''+base+'.price_str\']'}, __event_check_key_next);
-			$('input[name=\''+base+'.description\']').on("focusin", __event_select_all);
+			$('input[name="debit'+form_id+'.description"]').on("keydown", {"next_form":'input[name="debit'+form_id+'.price_str"]'}, __event_check_key_next);
+			$('input[name="debit'+form_id+'.description"]').on("focusin", __event_select_all);
 			
-			$('input[name=\''+base+'.price_str\']').on("focusin", price_data, __event_focusin_number);
-			$('input[name=\''+base+'.price_str\']').on("focusin", __event_select_all);
-			$('input[name=\''+base+'.price_str\']').on("focusin", calc_debits);
-			$('input[name=\''+base+'.price_str\']').on("focusout", price_data, __event_focusout_number);
-			$('input[name=\''+base+'.price_str\']').on("focusout", calc_debits);
-			$('input[name=\''+base+'.price_str\']').on("keydown", price_data, __event_check_number_input);
-			$('input[name=\''+base+'.price_str\']').on("keydown", price_data, __event_check_key_next);
+			$('input[name="debit'+form_id+'.price_str"]').on("focusin", price_data, __event_focusin_number);
+			$('input[name="debit'+form_id+'.price_str"]').on("focusin", __event_select_all);
+			$('input[name="debit'+form_id+'.price_str"]').on("focusin", calc_debits);
+			$('input[name="debit'+form_id+'.price_str"]').on("focusout", price_data, __event_focusout_number);
+			$('input[name="debit'+form_id+'.price_str"]').on("focusout", calc_debits);
+			$('input[name="debit'+form_id+'.price_str"]').on("keydown", price_data, __event_check_number_input);
+			$('input[name="debit'+form_id+'.price_str"]').on("keydown", price_data, __event_check_key_next);
 			
-			$('input[name=\''+base+'.quantity_str\']').on("focusin", quantity_data, __event_focusin_number);
-			$('input[name=\''+base+'.quantity_str\']').on("focusin", __event_select_all);
-			$('input[name=\''+base+'.quantity_str\']').on("focusin", calc_debits);
-			$('input[name=\''+base+'.quantity_str\']').on("focusout", quantity_data, __event_focusout_number);
-			$('input[name=\''+base+'.quantity_str\']').on("focusout", calc_debits);
-			$('input[name=\''+base+'.quantity_str\']').on("keydown", quantity_data, __event_check_number_input);
-			$('input[name=\''+base+'.quantity_str\']').on("keydown", quantity_data, __event_check_key_next);
+			$('input[name="debit'+form_id+'.quantity_str"]').on("focusin", quantity_data, __event_focusin_number);
+			$('input[name="debit'+form_id+'.quantity_str"]').on("focusin", __event_select_all);
+			$('input[name="debit'+form_id+'.quantity_str"]').on("focusin", calc_debits);
+			$('input[name="debit'+form_id+'.quantity_str"]').on("focusout", quantity_data, __event_focusout_number);
+			$('input[name="debit'+form_id+'.quantity_str"]').on("focusout", calc_debits);
+			$('input[name="debit'+form_id+'.quantity_str"]').on("keydown", quantity_data, __event_check_number_input);
+			$('input[name="debit'+form_id+'.quantity_str"]').on("keydown", quantity_data, __event_check_key_next);
 			
-			$('input[name=\''+base+'.price\']').val('0');
-			$('input[name=\''+base+'.price_str\']').val(make_number_string(0, money_scale));
-			$('input[name=\''+base+'.quantity\']').val('1');
-			$('input[name=\''+base+'.quantity_str\']').val(make_number_string(1, 0));
+			$('input[name="debit'+form_id+'.price"]').val('0');
+			$('input[name="debit'+form_id+'.price_str"]').val(make_number_string(0, money_scale));
+			$('input[name="debit'+form_id+'.quantity"]').val('1');
+			$('input[name="debit'+form_id+'.quantity_str"]').val(make_number_string(1, 0));
 			return form_id;
 		}
 		
 		function add_credit() {
 			var form_id = credit_form_cnt;
-			var base = 'credit['+form_id+']';
 			credit_form_cnt += 1;
 			
 			var line = [
 			'<tr>',
 			'<td class="code_form">',
-			'	<input type="hidden" name="'+base+'.id" value="-1"/>',
-			'	<select class="form-control" name="'+base+'.code_name">',
+			'	<input type="hidden" name="credit'+form_id+'.id" value="-1"/>',
+			'	<select class="form-control" name="credit'+form_id+'.code_name">',
 			credit_code_options,
 			'	</select>',
-			'	<input type="text" class="form-control" name="'+base+'.code"/>',
+			'	<input type="text" class="form-control" name="credit'+form_id+'.code"/>',
 			'</td>',
-			'<td><input type="text" class="form-control" name="'+base+'.description" placeholder="description"/></td>',
+			'<td><input type="text" class="form-control" name="credit'+form_id+'.description" placeholder="description"/></td>',
 			'<td>',
-			'	<input type="text" class="form-control" name="'+base+'.price_str" placeholder="price"/>',
-			'	<input type="hidden" name="'+base+'.price" value=""/>',
+			'	<input type="text" class="form-control" name="credit'+form_id+'.price_str" placeholder="price"/>',
+			'	<input type="hidden" name="credit'+form_id+'.price" value=""/>',
 			'</td>',
 			'</tr>',
 			].join('\n');
 			$('#credit_list_add_point').before(line);
 			
 			var __caret_to_end = function(event){ event.target.focus(); event.target.value = event.target.value + ''; };
-			var code_data = {"code_list":credit_code, "basename":base};
-			var price_data = {"scale":money_scale,"storage":$('input[name=\''+base+'.price\']')[0]};
+			var code_data = {"code_list":credit_code, "basename":'credit'+form_id};
+			var price_data = {"scale":money_scale,"storage":$('input[name="credit'+form_id+'.price"]')[0]};
 			
-			$('select[name=\''+base+'.code_name\']').on("change", code_data, function(event){__event_code_select_change(event);calc_credits();} );
-			$('input[name=\''+base+'.code\']').on("change", code_data, function(event){__event_code_text_change(event);calc_credits();});
+			$('select[name="credit'+form_id+'.code_name"]').on("change", code_data, function(event){__event_code_select_change(event);calc_credits();} );
+			$('input[name="credit'+form_id+'.code"]').on("change", code_data, function(event){__event_code_text_change(event);calc_credits();});
 			
-			$('input[name=\''+base+'.price_str\']').on("focusin", price_data, function(event){__event_focusin_number(event);calc_credits();});
-			$('input[name=\''+base+'.price_str\']').on("focusout", price_data, function(event){__event_focusout_number(event);calc_credits();});
-			$('input[name=\''+base+'.price_str\']').on("keydown", price_data, function(event){__event_check_number_input(event);});
+			$('input[name="credit'+form_id+'.price_str"]').on("focusin", price_data, function(event){__event_focusin_number(event);calc_credits();});
+			$('input[name="credit'+form_id+'.price_str"]').on("focusout", price_data, function(event){__event_focusout_number(event);calc_credits();});
+			$('input[name="credit'+form_id+'.price_str"]').on("keydown", price_data, function(event){__event_check_number_input(event);});
 			
-			$('input[name=\''+base+'.price\']').val('0');
-			$('input[name=\''+base+'.price_str\']').val(make_number_string(0, money_scale));
+			$('input[name="credit'+form_id+'.price"]').val('0');
+			$('input[name="credit'+form_id+'.price_str"]').val(make_number_string(0, money_scale));
 			return form_id;
 		}
 		
@@ -302,14 +283,13 @@
 		function calc_debits() {
 			var sum = 0;
 			for( var i=0; i<debit_form_cnt; i++ ) {
-				var basename = 'debit['+i+']';
-				var code = $('select[name=\''+basename+'.code_name\']').val();
-				var description = $('input[name=\''+basename+'.description\']').val();
+				var code = $('select[name="debit'+i+'.code_name"').val();
+				var description = $('input[name="debit'+i+'.description"]').val();
 				if( 0 > code || 0 == description.trim().length ) {
 					continue;
 				}
-				var price = parseInt($('input[name=\''+basename+'.price\']').val());
-				var quantity = parseInt($('input[name=\''+basename+'.quantity\']').val());
+				var price = parseInt($('input[name="debit'+i+'.price"]').val());
+				var quantity = parseInt($('input[name="debit'+i+'.quantity"]').val());
 				sum += (price*quantity);
 			}
 			$('input[name=debit_sum]').val(make_number_string(sum,2));
@@ -318,12 +298,12 @@
 		function calc_credits() {
 			var sum = 0;
 			for( var i=0; i<credit_form_cnt; i++ ) {
-				var code = $('select[name=\'credit['+i+'].code_name\']').val();
-				var description = $('input[name=\'credit['+i+'].description\']').val();
+				var code = $('select[name="credit'+i+'.code_name"]').val();
+				var description = $('input[name="credit'+i+'.description"]').val();
 				if( 0 > code || 0 == description.trim().length ) {
 					continue;
 				}
-				var price = parseInt($('input[name=\'credit['+i+'].price\']').val());
+				var price = parseInt($('input[name="credit'+i+'.price"]').val());
 				sum += price;
 			}
 			$('input[name=credit_sum]').val(make_number_string(sum,2));
@@ -336,29 +316,31 @@
 			debit_form_cnt = 0;
 			credit_form_cnt = 0;
 			if( origin_src ) {
+				$('input[name="slip.id"]').val(origin_src.slip.id);
+				$('select[name="slip.shop_id"]').val(origin_src.slip.shop_id);
+				$('input[name="slip.datetime"]').val(origin_src.slip.datetime);
+				
 				for( var debit_idx in origin_src.debit ) {
 					var form_id = add_debit();
 					var debit = origin_src.debit[debit_idx];
-					var basename = 'debit['+form_id+']';
-					$('input[name=\''+basename+'.id\']').val(debit.id);
-					$('input[name=\''+basename+'.code\']').val(debit.code);
-					$('select[name=\''+basename+'.code_name\']').val(debit.code);
-					$('input[name=\''+basename+'.description\']').val(debit.description);
-					$('input[name=\''+basename+'.price_str\']').val(make_number_string(debit.price, money_scale));
-					$('input[name=\''+basename+'.price\']').val(debit.price);
-					$('input[name=\''+basename+'.quantity_str\']').val(make_number_string(debit.quantity, 0));
-					$('input[name=\''+basename+'.quantity\']').val(debit.quantity);
+					$('input[name="debit'+form_id+'.id"]').val(debit.id);
+					$('input[name="debit'+form_id+'.code"]').val(debit.code);
+					$('select[name="debit'+form_id+'.code_name"]').val(debit.code);
+					$('input[name="debit'+form_id+'.description"]').val(debit.description);
+					$('input[name="debit'+form_id+'.price_str"]').val(make_number_string(debit.price, money_scale));
+					$('input[name="debit'+form_id+'.price"]').val(debit.price);
+					$('input[name="debit'+form_id+'.quantity_str"]').val(make_number_string(debit.quantity, 0));
+					$('input[name="debit'+form_id+'.quantity"]').val(debit.quantity);
 				}
 				for( var credit_idx in origin_src.credit ) {
 					var form_id = add_credit();
 					var credit = origin_src.credit[credit_idx];
-					var basename = 'credit['+form_id+']';
-					$('input[name=\''+basename+'.id\']').val(credit.id);
-					$('input[name=\''+basename+'.code\']').val(credit.code);
-					$('select[name=\''+basename+'.code_name\']').val(credit.code);
-					$('input[name=\''+basename+'.description\']').val(credit.description);
-					$('input[name=\''+basename+'.price_str\']').val(make_number_string(credit.price, money_scale));
-					$('input[name=\''+basename+'.price\']').val(credit.price);
+					$('input[name="credit'+form_id+'.id"]').val(credit.id);
+					$('input[name="credit'+form_id+'.code"]').val(credit.code);
+					$('select[name="credit'+form_id+'.code_name"]').val(credit.code);
+					$('input[name="credit'+form_id+'.description"]').val(credit.description);
+					$('input[name="credit'+form_id+'.price_str"]').val(make_number_string(credit.price, money_scale));
+					$('input[name="credit'+form_id+'.price"]').val(credit.price);
 				}
 			} else {
 				add_debit();
@@ -378,6 +360,12 @@
 			for( var code in credit_code ) {
 				credit_code_options += '<option value="'+credit_code[code].code+'">'+credit_code[code].name+'</option>\n';
 			}
+			
+			shop_code_options = '';
+			for( var code in shop_code ) {
+				shop_code_options += '<option value="'+shop_code[code].code+'">'+shop_code[code].name+'</option>\n';
+			}
+			$('select[name="slip.shop_id"]').append(shop_code_options);
 			reset_form();
 			$('#debit_add_btn').on("click", function(){add_debit();})
 			$('#credit_add_btn').on("click", function(){add_credit();})
@@ -430,13 +418,11 @@
 	<div class="col-sm-10 col-md-8 col-lg-7">
 		<div class="form-inline">
 			<label>Shop:</label>
-			<select style="width:200px" class="form-control">
-				<option>없음</option>
-				<option>식비</option>
-				<option>간식</option>
+			<input name="slip.id" type="hidden" value="-1"/>
+			<select name="slip.shop_id" style="width:200px" class="form-control">
 			</select>
 			<label style="margin-left:20px">Datetime:</label>
-			<input style="width:200px" type="text" class="form-control" name="datetime" value="2014-02-07 10:00:00"/>
+			<input style="width:200px" type="text" class="form-control" name="slip.datetime" value=""/>
 		</div>
 	</div>
 </div>

@@ -39,9 +39,9 @@ public class SlipUpdateController implements HestiaController {
 		RequestPath path = new RequestPath(req.getRequestPath().substring(matchPath.length()));
 		req.setAttribute("path", path);
 		
-		HashMap<String, Object> originData = null;
-		HashMap<String, Object> editingData = null;
-		HashMap<String, String> errorData = null;
+		JSONObject originData = null;
+		JSONObject editingData = null;
+		JSONObject errorData = null;
 		
 		switch( path.size() ) {
 		case 0:
@@ -69,22 +69,23 @@ public class SlipUpdateController implements HestiaController {
 		}
 
 		if( "post".equals(req.getMethod().toLowerCase())) {
-			editingData = new HashMap<>();
-			errorData = new HashMap<>();
+			editingData = new JSONObject();
+			errorData = new JSONObject();
 			Slip slip = processSave(req, originData, editingData, errorData);
 			if( null != slip ) {
 				return redirectTo("/account_book/slip/"+slip.id());
 			}
-			if( errorData.isEmpty() ) {
+			
+			if( 0 == errorData.length() ) {
 				errorData = null;
 			}
-			if( editingData.isEmpty() ) {
+			if( 0 == editingData.length() ) {
 				editingData = null;
 			}
 		}
 		String originDataString = "null";
 		if( null != originData ) {
-			originDataString = new JSONObject(originData).toString();
+			originDataString = originData.toString();
 		}
 		HashMap<String, Object> valueMap = new HashMap<String, Object>();
 		valueMap.put("shopList", db.retrieveShopList(null));
@@ -96,7 +97,7 @@ public class SlipUpdateController implements HestiaController {
 		return renderer.render("/account_book/slip_form.html", req, valueMap);
 	}
 	
-	private HashMap<String, Object> createFormDataFromSlip(Slip slip, List<Debit> debitList, List<Credit> creditList) {
+	private JSONObject createFormDataFromSlip(Slip slip, List<Debit> debitList, List<Credit> creditList) {
 		LinkedHashMap<String, Object> result = new LinkedHashMap<>();
 		
 		LinkedHashMap<String, Object> slipData = new LinkedHashMap<>();
@@ -127,11 +128,10 @@ public class SlipUpdateController implements HestiaController {
 			creditDataList.add(creditData);
 		}
 		result.put("credit", creditDataList);
-		
-		return result;
+		return new JSONObject(result);
 	}
 
-	private Slip processSave(HttpRequest req, HashMap<String, Object> originData, HashMap<String, Object> editingData, HashMap<String, String> errorData) throws Exception {
+	private Slip processSave(HttpRequest req, JSONObject originData, JSONObject editingData, JSONObject errorData) throws Exception {
 		@SuppressWarnings("unchecked")
 		Map<String, String> param = (Map<String, String>)req.getAttribute("bodyParam");
 		if( null == param ) {

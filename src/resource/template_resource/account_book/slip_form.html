@@ -212,7 +212,6 @@
 			
 			$('input[name="debit'+form_id+'.price_str"]').on("focusin", price_data, __event_focusin_number);
 			$('input[name="debit'+form_id+'.price_str"]').on("focusin", __event_select_all);
-			$('input[name="debit'+form_id+'.price_str"]').on("focusin", calc_debits);
 			$('input[name="debit'+form_id+'.price_str"]').on("focusout", price_data, __event_focusout_number);
 			$('input[name="debit'+form_id+'.price_str"]').on("focusout", calc_debits);
 			$('input[name="debit'+form_id+'.price_str"]').on("keydown", price_data, __event_check_number_input);
@@ -220,7 +219,6 @@
 			
 			$('input[name="debit'+form_id+'.quantity_str"]').on("focusin", quantity_data, __event_focusin_number);
 			$('input[name="debit'+form_id+'.quantity_str"]').on("focusin", __event_select_all);
-			$('input[name="debit'+form_id+'.quantity_str"]').on("focusin", calc_debits);
 			$('input[name="debit'+form_id+'.quantity_str"]').on("focusout", quantity_data, __event_focusout_number);
 			$('input[name="debit'+form_id+'.quantity_str"]').on("focusout", calc_debits);
 			$('input[name="debit'+form_id+'.quantity_str"]').on("keydown", quantity_data, __event_check_number_input);
@@ -350,7 +348,46 @@
 			calc_debits();
 			calc_credits();
 		}
-		
+
+		function submit_form() {
+			var result_data = {};
+			
+			var slip_id = $('input[name="slip.id"]').val();
+			var slip_shop_id = $('select[name="slip.shop_id"]').val();
+			var slip_datetime = $('input[name="slip.datetime"]').val();
+			var slip_data = {"id":slip_id, "shop_id":slip_shop_id, "datetime":slip_datetime};
+			
+			var debit_list = [];
+			for( var i=0; i<debit_form_cnt; i++ ) {
+				var id = $('input[name="debit'+i+'.id"]').val();
+				var code = $('select[name="debit'+i+'.code_name"').val();
+				var description = $('input[name="debit'+i+'.description"]').val();
+				if( 0 > code || 0 == description.trim().length ) {
+					continue;
+				}
+				var price = parseInt($('input[name="debit'+i+'.price"]').val());
+				var quantity = parseInt($('input[name="debit'+i+'.quantity"]').val());
+				debit_list.push({ "id":id, "code":code, "description":description, "price":price, "quantity":quantity });
+			}
+			var credit_list = [];
+			for( var i=0; i<credit_form_cnt; i++ ) {
+				var id = $('input[name="credit'+i+'.id"]').val();
+				var code = $('select[name="credit'+i+'.code_name"]').val();
+				var description = $('input[name="credit'+i+'.description"]').val();
+				if( 0 > code || 0 == description.trim().length ) {
+					continue;
+				}
+				var price = parseInt($('input[name="credit'+i+'.price"]').val());
+				credit_list.push({ "id":id, "code":code, "description":description, "price":price });
+			}
+			result_data["slip"] = slip_data;
+			result_data["debit"] = debit_list;
+			result_data["credit"] = credit_list;
+			console.log(JSON.stringify(result_data));
+			$('input[name=editing_data]').val(JSON.stringify(result_data));
+			$('#submit_form').submit();
+		}
+
 		$( document ).ready(function() {
 			debit_code_options = '';
 			for( var code in debit_code ) {
@@ -387,6 +424,7 @@
 					}
 				})
 			});
+			$('#form_save').on("click", submit_form);
 		});
 	});
 	</script>
@@ -395,7 +433,7 @@
 #printNavbar("slip")
 <div id="dialog-reset-confirm" title="Reset Confirmation">All changes will be lost.<br/>Are you sure?</div>
 <div class="container-fluid">
-<form method="POST" action = ".">
+<form id="submit_form" method="POST" action = ".">
 <div class="row">
 	<div class="col-sm-1 col-md-1"></div>
 	<div class="col-sm-10 col-md-8 col-lg-7">
@@ -404,9 +442,9 @@
 			<input style="width:100px" type="text" class="form-control" name="debit_sum" value="" readonly/>
 			<label style="margin-left:20px">Paying:</label>
 			<input style="width:100px" type="text" class="form-control" name="credit_sum" value="" readonly/>
-			<input type="hidden" name="data"/>
+			<input type="hidden" name="editing_data"/>
 			<input style="margin-left:20px" type="button" class="form-control" id="form_reset" value="RESET"/>
-			<input style="margin-left:10px" type="submit" class="form-control" id="form_save" value="SAVE"/>			
+			<input style="margin-left:10px" type="button" class="form-control" id="form_save" value="SAVE"/>			
 		</div>
 	</div>
 </div>

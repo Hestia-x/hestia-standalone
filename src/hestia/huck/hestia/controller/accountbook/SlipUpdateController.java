@@ -17,6 +17,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class SlipUpdateController implements HestiaController {
@@ -40,9 +42,6 @@ public class SlipUpdateController implements HestiaController {
 		req.setAttribute("path", path);
 		
 		JSONObject originData = null;
-		JSONObject editingData = null;
-		JSONObject errorData = null;
-		
 		switch( path.size() ) {
 		case 0:
 			break;
@@ -68,32 +67,32 @@ public class SlipUpdateController implements HestiaController {
 			return null;
 		}
 
-		if( "post".equals(req.getMethod().toLowerCase())) {
-			editingData = new JSONObject();
-			errorData = new JSONObject();
-			Slip slip = processSave(req, originData, editingData, errorData);
-			if( null != slip ) {
-				return redirectTo("/account_book/slip/"+slip.id());
-			}
-			
-			if( 0 == errorData.length() ) {
-				errorData = null;
-			}
-			if( 0 == editingData.length() ) {
-				editingData = null;
-			}
-		}
 		String originDataString = "null";
+		String editingDataString = "null";
+		String errorDataString = "null";
 		if( null != originData ) {
 			originDataString = originData.toString();
+		}		
+		if( "post".equals(req.getMethod().toLowerCase())) {
+			SaveResult saveResult = processSave(req, originData);
+			if( null == saveResult.errorData ) {
+				return redirectTo("/account_book/slip/"+saveResult.slipId);
+			}
+			if( null != saveResult.editingData ) {
+				editingDataString = saveResult.editingData.toString();
+			}
+			if( null != saveResult.errorData ) {
+				errorDataString = saveResult.errorData.toString();
+			}
 		}
+
 		HashMap<String, Object> valueMap = new HashMap<String, Object>();
 		valueMap.put("shopList", db.retrieveShopList(null));
 		valueMap.put("debitCodeList", db.retrieveDebitCodeList(null));
 		valueMap.put("creditCodeList", db.retrieveCreditCodeList(null));
 		valueMap.put("originData", originDataString);
-		valueMap.put("editingData", editingData);
-		valueMap.put("errorData", errorData);
+		valueMap.put("editingData", editingDataString);
+		valueMap.put("errorData", errorDataString);
 		return renderer.render("/account_book/slip_form.html", req, valueMap);
 	}
 	
@@ -131,14 +130,107 @@ public class SlipUpdateController implements HestiaController {
 		return new JSONObject(result);
 	}
 
-	private Slip processSave(HttpRequest req, JSONObject originData, JSONObject editingData, JSONObject errorData) throws Exception {
+	private static class SaveResult {
+		int slipId;
+		JSONObject editingData;
+		JSONObject errorData;
+	}
+	private static class SaveException extends Exception {
+		private static final long serialVersionUID = -1849038092383472407L;
+		public SaveException(String errorForm, String msg) {
+			
+		}
+	}
+	
+	private SaveResult processSave(HttpRequest req, JSONObject originData) throws Exception {
 		@SuppressWarnings("unchecked")
 		Map<String, String> param = (Map<String, String>)req.getAttribute("bodyParam");
 		if( null == param ) {
-			throw new Exception("aa");
+			throw new Exception("only POST allowed");
 		}
-		System.out.println(param.get("test"));
-		return null;
+		
+		
+		String editingDataString = param.get("editing_data");
+		JSONObject editingData = new JSONObject(editingDataString);
+		JSONObject errorData = null;
+		try {
+			checkEditingData(originData, editingData);
+		} catch( SaveException ex ) {
+			
+		}
+		
+		System.out.println(editingData.toString(2));
+		SaveResult saveResult = new SaveResult();
+		saveResult.editingData = editingData;
+		saveResult.errorData = errorData;
+		return saveResult;
+	}
+	
+	private void checkEditingData(JSONObject originData, JSONObject editingData) throws SaveException, JSONException {
+		JSONObject slipData = editingData.getJSONObject("slip");
+		JSONArray debitList = editingData.getJSONArray("debit");
+		JSONArray creditList = editingData.getJSONArray("credit");
+		
+		int debitSum = 0;
+		int creditSum = 0;
+		
+		int slip_id = slipData.getInt("id");
+		int slip_shopId = slipData.getInt("shop_id");
+		String slip_datetimeStr = slipData.getString("datetime");
+		if( 0 <= slip_id && db.retrieveSlipList(a->a.id() == slip_id).isEmpty() ) {
+			throw new SaveException(null, "unknown slip data");
+		}
+		if( db.retrieveShopList(a->a.id() == slip_shopId).isEmpty() ) {
+			throw new SaveException("slip.shop_id", "unknown code");
+		}
+		
+		for( int i=0; i<debitList.length(); i++ ) {
+			JSONObject debitData = debitList.getJSONObject(i);
+			int id = debitData.getInt("id");
+			int code = debitData.getInt("code");
+			String description = debitData.getString("description");
+			int price = debitData.getInt("price");
+			int quantity = debitData.getInt("quantity");
+			if( 0 > slip_id && 0 <= id ) {
+				throw new SaveException(null, "unexpected debit_id: " + id);
+			}
+			if( null == description || description.trim().isEmpty() ) {
+				throw new SaveException("debit"+i+".description", "need description");
+			}
+			if( db.retrieveDebitCodeList(a->a.id() == code).isEmpty() ) {
+				throw new SaveException("debit"+i+".code_name", "unknown code");
+			}
+			if( 0 > price ) {
+				throw new SaveException("debit"+i+".price_str", "need positive price");
+			}
+			if( 0 > quantity ) {
+				throw new SaveException("debit"+i+".quantity", "need positive quantity");
+			}
+			debitSum += (price * quantity);
+		}
+		for( int i=0; i<creditList.length(); i++ ) {
+			JSONObject creditData = debitList.getJSONObject(i);
+			int id = creditData.getInt("id");
+			int code = creditData.getInt("code");
+			String description = creditData.getString("description");
+			int price = creditData.getInt("price");
+			if( 0 > slip_id && 0 <= id ) {
+				throw new SaveException(null, "unexpected credit_id: " + id);
+			}
+			if( null == description || description.trim().isEmpty() ) {
+				throw new SaveException("credit"+i+".description", "need description");
+			}
+			if( 0 > code || db.retrieveDebitCodeList(a->a.id() == code).isEmpty() ) {
+				throw new SaveException("credit"+i+".code_name", "unknown code");
+			}
+			if( 0 > price ) {
+				throw new SaveException("credit"+i+".price_str", "need positive price");
+			}
+			creditSum += price;
+		}
+		if( debitSum != creditSum ) {
+			throw new SaveException(null, "unbalanced slip");
+		}
 	}
 }
 

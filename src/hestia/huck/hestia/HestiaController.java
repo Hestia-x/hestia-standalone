@@ -1,11 +1,17 @@
 package huck.hestia;
 
+import org.apache.log4j.Logger;
+
 import huck.simplehttp.HttpException;
 import huck.simplehttp.HttpRequest;
 import huck.simplehttp.HttpResponse;
 
 public interface HestiaController {
 	public HttpResponse controll(HttpRequest req, String matchPath) throws HttpException, Exception;
+	
+	default Logger logger() {
+		return Logger.getLogger("hestia");
+	}
 	
 	default HttpResponse redirectTo(String path) {
 		HttpResponse res = new HttpResponse(HttpResponse.Status.MOVED_TEMPORARILY);

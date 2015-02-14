@@ -20,8 +20,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 
-import org.apache.log4j.Logger;
-
 public class SystemController implements HestiaController {
 	private HestiaMemoryDB db;
 	private File dataDir;
@@ -80,7 +78,7 @@ public class SystemController implements HestiaController {
 					db.load(FileDataManager.getLoader(file));
 					return "/system/load_success.html";
 				} catch( Exception ex ) {
-					Logger.getLogger("hestia").error(ex, ex);
+					logger().error(ex, ex);
 					return "/system/load_fail.html";
 				}
 			} else {

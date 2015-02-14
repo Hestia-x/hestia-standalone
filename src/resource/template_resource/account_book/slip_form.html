@@ -48,6 +48,8 @@
 		];
 
 		var origin_src = $!originData;
+		var editing_src = $!editingData;
+		var error_src =$!errorData;
 		
 		function make_number_string(money, scale) {
 			var result = '';
@@ -308,19 +310,19 @@
 			check_equality();
 		}
 		
-		function reset_form() {
+		function set_form(form_data) {
 			$('#debit_list').children(':not(#debit_list_add_point)').remove();
 			$('#credit_list').children(':not(#credit_list_add_point)').remove();
 			debit_form_cnt = 0;
 			credit_form_cnt = 0;
-			if( origin_src ) {
-				$('input[name="slip.id"]').val(origin_src.slip.id);
-				$('select[name="slip.shop_id"]').val(origin_src.slip.shop_id);
-				$('input[name="slip.datetime"]').val(origin_src.slip.datetime);
+			if( form_data ) {
+				$('input[name="slip.id"]').val(form_data.slip.id);
+				$('select[name="slip.shop_id"]').val(form_data.slip.shop_id);
+				$('input[name="slip.datetime"]').val(form_data.slip.datetime);
 				
-				for( var debit_idx in origin_src.debit ) {
+				for( var debit_idx in form_data.debit ) {
 					var form_id = add_debit();
-					var debit = origin_src.debit[debit_idx];
+					var debit = form_data.debit[debit_idx];
 					$('input[name="debit'+form_id+'.id"]').val(debit.id);
 					$('input[name="debit'+form_id+'.code"]').val(debit.code);
 					$('select[name="debit'+form_id+'.code_name"]').val(debit.code);
@@ -330,9 +332,9 @@
 					$('input[name="debit'+form_id+'.quantity_str"]').val(make_number_string(debit.quantity, 0));
 					$('input[name="debit'+form_id+'.quantity"]').val(debit.quantity);
 				}
-				for( var credit_idx in origin_src.credit ) {
+				for( var credit_idx in form_data.credit ) {
 					var form_id = add_credit();
-					var credit = origin_src.credit[credit_idx];
+					var credit = form_data.credit[credit_idx];
 					$('input[name="credit'+form_id+'.id"]').val(credit.id);
 					$('input[name="credit'+form_id+'.code"]').val(credit.code);
 					$('select[name="credit'+form_id+'.code_name"]').val(credit.code);
@@ -346,7 +348,10 @@
 				add_credit();
 			}
 			calc_debits();
-			calc_credits();
+			calc_credits();			
+		}
+		function reset_form() {
+			form_data(origin_src)
 		}
 
 		function submit_form() {
@@ -403,7 +408,13 @@
 				shop_code_options += '<option value="'+shop_code[code].code+'">'+shop_code[code].name+'</option>\n';
 			}
 			$('select[name="slip.shop_id"]').append(shop_code_options);
-			reset_form();
+			
+			if( editing_src ) {
+				set_form(editing_src);
+			} else {
+				set_form(origin_src);
+			}
+			
 			$('#debit_add_btn').on("click", function(){add_debit();})
 			$('#credit_add_btn').on("click", function(){add_credit();})
 

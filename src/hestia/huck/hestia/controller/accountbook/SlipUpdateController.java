@@ -143,8 +143,17 @@ public class SlipUpdateController implements HestiaController {
 	}
 	private static class SaveException extends Exception {
 		private static final long serialVersionUID = -1849038092383472407L;
+		private String errorForm;
+		private String msg;
 		public SaveException(String errorForm, String msg) {
-			
+			super(msg);
+			this.errorForm = errorForm;
+			this.msg = msg;
+		}
+		public SaveException(String errorForm, String msg, Exception cause) {
+			super(msg, cause);
+			this.errorForm = errorForm;
+			this.msg = msg;
 		}
 	}
 	
@@ -154,18 +163,18 @@ public class SlipUpdateController implements HestiaController {
 		if( null == param ) {
 			throw new Exception("only POST allowed");
 		}
-		
-		
+
 		String editingDataString = param.get("editing_data");
 		JSONObject editingData = new JSONObject(editingDataString);
 		JSONObject errorData = null;
 		try {
 			checkEditingData(originData, editingData);
 		} catch( SaveException ex ) {
-			
+			errorData = new JSONObject();
+			errorData.put("form", ex.errorForm);
+			errorData.put("msg", ex.msg);
+			logger().error(ex, ex);
 		}
-		
-		System.out.println(editingData.toString(2));
 		SaveResult saveResult = new SaveResult();
 		saveResult.editingData = editingData;
 		saveResult.errorData = errorData;
@@ -193,7 +202,7 @@ public class SlipUpdateController implements HestiaController {
 			try {
 				slip_datetime = LocalDateTime.parse(slip_datetimeStr, DateTimeFormatter.ofPattern("uuuu-MM-dd kk:mm:ss"));
 			} catch( DateTimeParseException ex ) {
-				throw new SaveException("slip.datetime", "unknown datetime format");
+				throw new SaveException("slip.datetime", "unknown datetime format", ex);
 			}
 			if( slip_datetime.isAfter(now) ) {
 				throw new SaveException("slip.datetime", "can not put future datetime.");

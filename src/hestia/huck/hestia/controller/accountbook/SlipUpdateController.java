@@ -5,12 +5,18 @@ import huck.hestia.RequestPath;
 import huck.hestia.VelocityRenderer;
 import huck.hestia.db.Credit;
 import huck.hestia.db.Debit;
+import huck.hestia.db.DebitCode;
 import huck.hestia.db.HestiaDB;
 import huck.hestia.db.Slip;
 import huck.simplehttp.HttpRequest;
 import huck.simplehttp.HttpResponse;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -177,9 +183,23 @@ public class SlipUpdateController implements HestiaController {
 		int slip_id = slipData.getInt("id");
 		int slip_shopId = slipData.getInt("shop_id");
 		String slip_datetimeStr = slipData.getString("datetime");
+		
+		LocalDateTime now = LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault());
+		LocalDateTime slip_datetime = now;
 		if( 0 <= slip_id && db.retrieveSlipList(a->a.id() == slip_id).isEmpty() ) {
 			throw new SaveException(null, "unknown slip data");
 		}
+		if( null != slip_datetimeStr && !slip_datetimeStr.trim().isEmpty()) {
+			try {
+				slip_datetime = LocalDateTime.parse(slip_datetimeStr, DateTimeFormatter.ofPattern("uuuu-MM-dd kk:mm:ss"));
+			} catch( DateTimeParseException ex ) {
+				throw new SaveException("slip.datetime", "unknown datetime format");
+			}
+			if( slip_datetime.isAfter(now) ) {
+				throw new SaveException("slip.datetime", "can not put future datetime.");
+			}
+		}
+		slipData.put("datetime", slip_datetime);
 		if( db.retrieveShopList(a->a.id() == slip_shopId).isEmpty() ) {
 			throw new SaveException("slip.shop_id", "unknown code");
 		}
@@ -197,7 +217,8 @@ public class SlipUpdateController implements HestiaController {
 			if( null == description || description.trim().isEmpty() ) {
 				throw new SaveException("debit"+i+".description", "need description");
 			}
-			if( db.retrieveDebitCodeList(a->a.id() == code).isEmpty() ) {
+			List<DebitCode> debitCodeList = db.retrieveDebitCodeList(a->a.id() == code);
+			if( debitCodeList.isEmpty() ) {
 				throw new SaveException("debit"+i+".code_name", "unknown code");
 			}
 			if( 0 > price ) {

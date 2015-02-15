@@ -88,10 +88,11 @@ class HttpRequestParser {
 						}
 					}
 					ByteBuffer bodyPieceBuf = lineByteBuffer.asReadOnlyByteBuffer(contentLength-bodyProcessedBytes);
+					int writeLen = 0;
 					while( 0 < bodyPieceBuf.remaining() ) {
-						bodyProcessor.write(bodyPieceBuf);
+						writeLen += bodyProcessor.write(bodyPieceBuf);
 					}
-					bodyProcessedBytes += bodyPieceBuf.limit();
+					bodyProcessedBytes += writeLen;
 					finished = bodyProcessedBytes >= contentLength;
 				}
 				if( finished ) {

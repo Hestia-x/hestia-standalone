@@ -108,7 +108,7 @@ public class SlipUpdateController implements HestiaController {
 		LinkedHashMap<String, Object> slipData = new LinkedHashMap<>();
 		slipData.put("id", slip.id());
 		slipData.put("shop_id", slip.shop().id());
-		slipData.put("datetime", slip.slipDttm());
+		slipData.put("datetime", slip.slipDttm().format(DateTimeFormatter.ofPattern("uuuu-MM-dd kk:mm:ss")));
 		result.put("slip", slipData);
 		
 		ArrayList<Object> debitDataList = new ArrayList<>();
@@ -165,10 +165,50 @@ public class SlipUpdateController implements HestiaController {
 		}
 
 		String editingDataString = param.get("editing_data");
+		System.out.println(editingDataString);
+		Slip slip = null;
 		JSONObject editingData = new JSONObject(editingDataString);
 		JSONObject errorData = null;
 		try {
 			checkEditingData(originData, editingData);
+			JSONObject slipData = editingData.getJSONObject("slip");
+			JSONArray debitList = editingData.getJSONArray("debit");
+			JSONArray creditList = editingData.getJSONArray("credit");
+			int slip_id = slipData.getInt("id");
+			int slip_shopId = slipData.getInt("shop_id");
+			LocalDateTime slip_datetime = (LocalDateTime)slipData.get("datetime_obj");
+			
+			if( 0 < slip_id ) {
+				db.updateSlip(slip_id, slip_shopId, slip_datetime);
+				slip = db.retrieveSlipList(a->a.id() == slip_id).get(0);
+			} else {
+				slip = db.insertSlip(slip_datetime, slip_shopId);
+			}			
+			for( int i=0; i<debitList.length(); i++ ) {
+				JSONObject debitData = debitList.getJSONObject(i);
+				int id = debitData.getInt("id");
+				int code = debitData.getInt("code");
+				String description = debitData.getString("description");
+				int price = debitData.getInt("price");
+				int quantity = debitData.getInt("quantity");
+				if( 0 < id ) {
+					db.updateDebit(id, code, description, price, quantity);
+				} else {
+					db.insertDebit(slip.id(), code, description, price, quantity);
+				}
+			}
+			for( int i=0; i<creditList.length(); i++ ) {
+				JSONObject creditData = creditList.getJSONObject(i);
+				int id = creditData.getInt("id");
+				int code = creditData.getInt("code");
+				String description = creditData.getString("description");
+				int price = creditData.getInt("price");
+				if( 0 < id ) {
+					db.updateCredit(id, code, description, price);
+				} else {
+					db.insertCredit(slip.id(), code, description, price);
+				}
+			}
 		} catch( SaveException ex ) {
 			errorData = new JSONObject();
 			errorData.put("form", ex.errorForm);
@@ -176,6 +216,7 @@ public class SlipUpdateController implements HestiaController {
 			logger().error(ex, ex);
 		}
 		SaveResult saveResult = new SaveResult();
+		saveResult.slipId = null==slip?-1:slip.id();
 		saveResult.editingData = editingData;
 		saveResult.errorData = errorData;
 		return saveResult;
@@ -185,6 +226,12 @@ public class SlipUpdateController implements HestiaController {
 		JSONObject slipData = editingData.getJSONObject("slip");
 		JSONArray debitList = editingData.getJSONArray("debit");
 		JSONArray creditList = editingData.getJSONArray("credit");
+		if( 0 == debitList.length() ) {
+			throw new SaveException(null, "need one or more debit");
+		}
+		if( 0 == creditList.length() ) {
+			throw new SaveException(null, "need one or more credit");
+		}
 		
 		int debitSum = 0;
 		int creditSum = 0;
@@ -208,7 +255,8 @@ public class SlipUpdateController implements HestiaController {
 				throw new SaveException("slip.datetime", "can not put future datetime.");
 			}
 		}
-		slipData.put("datetime", slip_datetime);
+		slipData.put("datetime", slip_datetime.format(DateTimeFormatter.ofPattern("uuuu-MM-dd kk:mm:ss")));
+		slipData.put("datetime_obj", slip_datetime);
 		if( db.retrieveShopList(a->a.id() == slip_shopId).isEmpty() ) {
 			throw new SaveException("slip.shop_id", "unknown code");
 		}
@@ -239,7 +287,7 @@ public class SlipUpdateController implements HestiaController {
 			debitSum += (price * quantity);
 		}
 		for( int i=0; i<creditList.length(); i++ ) {
-			JSONObject creditData = debitList.getJSONObject(i);
+			JSONObject creditData = creditList.getJSONObject(i);
 			int id = creditData.getInt("id");
 			int code = creditData.getInt("code");
 			String description = creditData.getString("description");

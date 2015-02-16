@@ -22,6 +22,7 @@
 				<li #if($menuName=="flow") class="active" #end><a href="/account_book/flow/">Flow</a></li>
 				<li #if($menuName=="slip") class="active" #end><a href="/account_book/slip/">Slip</a></li>
 			</ul>
+			<p class="navbar-text" style="margin-left: 70px; font-size:20px; margin-top:11px; margin-bottom:10px;"><b>$!__req.getAttribute("loadedDataName")</b></p>
 			<ul class="nav navbar-nav navbar-right">
 				<li><button id="add_slip_btn" type="button" class="btn btn-default navbar-btn">Add Slip</button></li>
 				<li class="dropdown #if($menuName=="system") active #end">

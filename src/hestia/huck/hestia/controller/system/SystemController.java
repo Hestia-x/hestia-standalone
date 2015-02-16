@@ -35,6 +35,8 @@ public class SystemController implements HestiaController {
 	public HttpResponse controll(HttpRequest req, String matchPath) throws Exception {
 		RequestPath path = new RequestPath(req.getRequestPath().substring(matchPath.length()));
 		req.setAttribute("path", path);
+		String loadedDataName = db.loadedDataName();
+		req.setAttribute("loadedDataName", loadedDataName);
 
 		ActionFunction actionFunction = null;
 		switch( path.get(0) ) {

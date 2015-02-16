@@ -78,6 +78,8 @@ public class SystemController implements HestiaController {
 				File file = new File(dataDir, filename);
 				try {
 					db.load(FileDataManager.getLoader(file));
+					String loadedDataName = db.loadedDataName();
+					req.setAttribute("loadedDataName", loadedDataName);
 					return "/system/load_success.html";
 				} catch( Exception ex ) {
 					logger().error(ex, ex);

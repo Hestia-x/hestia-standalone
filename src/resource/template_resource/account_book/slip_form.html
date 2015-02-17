@@ -285,7 +285,7 @@
 			for( var i=0; i<debit_form_cnt; i++ ) {
 				var code = $('select[name="debit'+i+'.code_name"').val();
 				var description = $('input[name="debit'+i+'.description"]').val();
-				if( 0 > code || 0 == description.trim().length ) {
+				if( 0 > code ) {
 					continue;
 				}
 				var price = parseInt($('input[name="debit'+i+'.price"]').val());
@@ -300,7 +300,7 @@
 			for( var i=0; i<credit_form_cnt; i++ ) {
 				var code = $('select[name="credit'+i+'.code_name"]').val();
 				var description = $('input[name="credit'+i+'.description"]').val();
-				if( 0 > code || 0 == description.trim().length ) {
+				if( 0 > code ) {
 					continue;
 				}
 				var price = parseInt($('input[name="credit'+i+'.price"]').val());
@@ -351,7 +351,7 @@
 			calc_credits();			
 		}
 		function reset_form() {
-			form_data(origin_src)
+			set_form(origin_src)
 		}
 
 		function submit_form() {
@@ -367,7 +367,7 @@
 				var id = $('input[name="debit'+i+'.id"]').val();
 				var code = $('select[name="debit'+i+'.code_name"').val();
 				var description = $('input[name="debit'+i+'.description"]').val();
-				if( 0 > code || 0 == description.trim().length ) {
+				if( 0 >= id && (0 > code || 0 == description.trim().length) ) {
 					continue;
 				}
 				var price = parseInt($('input[name="debit'+i+'.price"]').val());
@@ -379,7 +379,7 @@
 				var id = $('input[name="credit'+i+'.id"]').val();
 				var code = $('select[name="credit'+i+'.code_name"]').val();
 				var description = $('input[name="credit'+i+'.description"]').val();
-				if( 0 > code || 0 == description.trim().length ) {
+				if( 0 >= id && (0 > code || 0 == description.trim().length) ) {
 					continue;
 				}
 				var price = parseInt($('input[name="credit'+i+'.price"]').val());
@@ -415,6 +415,19 @@
 				set_form(origin_src);
 			}
 			
+			if( error_src ) {
+				if( error_src.form ) {
+					$('input[name="'+error_src.form+'"]').focus();
+				}
+				if( error_src.msg ) {
+					$('#error_msg').append(error_src.msg);
+				} else {
+					$('#error_msg').append("fail");
+				}
+			} else {
+				$('#error_msg').hide();
+			}
+			
 			$('#debit_add_btn').on("click", function(){add_debit();})
 			$('#credit_add_btn').on("click", function(){add_credit();})
 
@@ -427,6 +440,7 @@
 					buttons: {
 						"Reset": function() {
 							reset_form();
+							$('#error_msg').hide();
 							$(this).dialog("close");
 						},
 						"Cancel": function() {
@@ -444,7 +458,7 @@
 #printNavbar("slip")
 <div id="dialog-reset-confirm" title="Reset Confirmation">All changes will be lost.<br/>Are you sure?</div>
 <div class="container-fluid">
-<form id="submit_form" method="POST" action = ".">
+<form id="submit_form" method="POST" action = "#if(0 <$slipId) ./$slipId #else . #end">
 <div class="row">
 	<div class="col-sm-1 col-md-1"></div>
 	<div class="col-sm-10 col-md-8 col-lg-7">
@@ -462,6 +476,11 @@
 </form>
 <form id="input_form">
 <div class="row">&nbsp;</div>
+<div class="row">
+	<div class="col-sm-offset-1 col-md-offset-1 col-sm-11 col-md-9 col-lg-8">
+		<div class="alert alert-danger" role="alert" id="error_msg"></div>
+	</div>
+</div>
 <div class="row">
 	<div class="col-sm-1 col-md-1"></div>
 	<div class="col-sm-10 col-md-8 col-lg-7">

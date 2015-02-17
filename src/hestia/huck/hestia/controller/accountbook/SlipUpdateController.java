@@ -5,7 +5,6 @@ import huck.hestia.RequestPath;
 import huck.hestia.VelocityRenderer;
 import huck.hestia.db.Credit;
 import huck.hestia.db.Debit;
-import huck.hestia.db.DebitCode;
 import huck.hestia.db.HestiaDB;
 import huck.hestia.db.Slip;
 import huck.simplehttp.HttpRequest;
@@ -46,26 +45,27 @@ public class SlipUpdateController implements HestiaController {
 		}
 		RequestPath path = new RequestPath(req.getRequestPath().substring(matchPath.length()));
 		req.setAttribute("path", path);
-		
+
+		int slipId = -1;
 		JSONObject originData = null;
 		switch( path.size() ) {
 		case 0:
 			break;
 		case 1:
-			int slipId;
 			try {
 				slipId = Integer.parseInt(path.get(0));
 			} catch( NumberFormatException ex ) {
 				notFound(req);
 				return null;	
 			}
-			List<Slip> slipList = db.retrieveSlipList(a->a.id()==slipId);
+			int tmpSlipId = slipId;
+			List<Slip> slipList = db.retrieveSlipList(a->a.id()==tmpSlipId);
 			if( slipList.isEmpty() ) {
 				notFound(req);
 				return null;
 			}
-			List<Debit> debitList = db.retrieveDebitList(a->a.slip().id()==slipId);
-			List<Credit> creditList = db.retrieveCreditList(a->a.slip().id()==slipId);
+			List<Debit> debitList = db.retrieveDebitList(a->a.slip().id()==tmpSlipId);
+			List<Credit> creditList = db.retrieveCreditList(a->a.slip().id()==tmpSlipId);
 			originData = createFormDataFromSlip(slipList.get(0), debitList, creditList);
 			break;
 		default:
@@ -99,6 +99,7 @@ public class SlipUpdateController implements HestiaController {
 		valueMap.put("originData", originDataString);
 		valueMap.put("editingData", editingDataString);
 		valueMap.put("errorData", errorDataString);
+		valueMap.put("slipId", slipId);
 		return renderer.render("/account_book/slip_form.html", req, valueMap);
 	}
 	
@@ -191,10 +192,12 @@ public class SlipUpdateController implements HestiaController {
 				String description = debitData.getString("description");
 				int price = debitData.getInt("price");
 				int quantity = debitData.getInt("quantity");
-				if( 0 < id ) {
+				if( 0 >= id ) {
+					db.insertDebit(slip.id(), code, description, price, quantity);
+				} else if( 0 < code ) {
 					db.updateDebit(id, code, description, price, quantity);
 				} else {
-					db.insertDebit(slip.id(), code, description, price, quantity);
+					db.deleteDebit(id);
 				}
 			}
 			for( int i=0; i<creditList.length(); i++ ) {
@@ -203,10 +206,12 @@ public class SlipUpdateController implements HestiaController {
 				int code = creditData.getInt("code");
 				String description = creditData.getString("description");
 				int price = creditData.getInt("price");
-				if( 0 < id ) {
+				if( 0 >= id ) {
+					db.insertCredit(slip.id(), code, description, price);
+				} else if( 0 < code ) {
 					db.updateCredit(id, code, description, price);
 				} else {
-					db.insertCredit(slip.id(), code, description, price);
+					db.deleteCredit(id);
 				}
 			}
 		} catch( SaveException ex ) {
@@ -223,6 +228,7 @@ public class SlipUpdateController implements HestiaController {
 	}
 	
 	private void checkEditingData(JSONObject originData, JSONObject editingData) throws SaveException, JSONException {
+		// TODO compare originData and editingData
 		JSONObject slipData = editingData.getJSONObject("slip");
 		JSONArray debitList = editingData.getJSONArray("debit");
 		JSONArray creditList = editingData.getJSONArray("credit");
@@ -274,9 +280,10 @@ public class SlipUpdateController implements HestiaController {
 			if( null == description || description.trim().isEmpty() ) {
 				throw new SaveException("debit"+i+".description", "need description");
 			}
-			List<DebitCode> debitCodeList = db.retrieveDebitCodeList(a->a.id() == code);
-			if( debitCodeList.isEmpty() ) {
-				throw new SaveException("debit"+i+".code_name", "unknown code");
+			if( 0 >= id || 0 < code ) {
+				if( db.retrieveDebitCodeList(a->a.id() == code).isEmpty() ) {
+					throw new SaveException("debit"+i+".code_name", "unknown code");
+				}
 			}
 			if( 0 > price ) {
 				throw new SaveException("debit"+i+".price_str", "need positive price");
@@ -298,8 +305,10 @@ public class SlipUpdateController implements HestiaController {
 			if( null == description || description.trim().isEmpty() ) {
 				throw new SaveException("credit"+i+".description", "need description");
 			}
-			if( 0 > code || db.retrieveDebitCodeList(a->a.id() == code).isEmpty() ) {
-				throw new SaveException("credit"+i+".code_name", "unknown code");
+			if( 0 >= id || 0 < code ) {
+				if( db.retrieveDebitCodeList(a->a.id() == code).isEmpty() ) {
+					throw new SaveException("credit"+i+".code_name", "unknown code");
+				}	
 			}
 			if( 0 > price ) {
 				throw new SaveException("credit"+i+".price_str", "need positive price");

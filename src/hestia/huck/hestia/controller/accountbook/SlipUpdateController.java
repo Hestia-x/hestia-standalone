@@ -18,6 +18,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -238,6 +239,23 @@ public class SlipUpdateController implements HestiaController {
 		if( 0 == creditList.length() ) {
 			throw new SaveException(null, "need one or more credit");
 		}
+		HashSet<Integer> orgDebitIdSet = new HashSet<>();
+		HashSet<Integer> orgCreditIdSet = new HashSet<>();
+		if( null != originData ) {
+			JSONObject orgSlipData = originData.getJSONObject("slip");
+			JSONArray orgDebitList = originData.getJSONArray("debit");
+			JSONArray orgCreditList = originData.getJSONArray("credit");
+			
+			if( slipData.getInt("id") != orgSlipData.getInt("slip") ) {
+				throw new SaveException(null, "different slip id");
+			}
+			for( int i=0; i<orgDebitList.length(); i++ ) {
+				orgDebitIdSet.add(orgDebitList.getJSONObject(i).getInt("id"));
+			}
+			for( int i=0; i<orgCreditList.length(); i++ ) {
+				orgCreditIdSet.add(orgCreditList.getJSONObject(i).getInt("id"));
+			}
+		}
 		
 		int debitSum = 0;
 		int creditSum = 0;
@@ -267,6 +285,8 @@ public class SlipUpdateController implements HestiaController {
 			throw new SaveException("slip.shop_id", "unknown code");
 		}
 		
+		HashSet<Integer> debitIdSet = new HashSet<>();
+		HashSet<Integer> creditIdSet = new HashSet<>();
 		for( int i=0; i<debitList.length(); i++ ) {
 			JSONObject debitData = debitList.getJSONObject(i);
 			int id = debitData.getInt("id");
@@ -274,16 +294,25 @@ public class SlipUpdateController implements HestiaController {
 			String description = debitData.getString("description");
 			int price = debitData.getInt("price");
 			int quantity = debitData.getInt("quantity");
-			if( 0 > slip_id && 0 <= id ) {
-				throw new SaveException(null, "unexpected debit_id: " + id);
-			}
-			if( null == description || description.trim().isEmpty() ) {
-				throw new SaveException("debit"+i+".description", "need description");
+			if( 0 < id ) {
+				if( 0 < slip_id ) {
+					if( !orgDebitIdSet.contains(id) ) {
+						throw new SaveException("debit"+i+".description", "need description");
+					} else {
+						debitIdSet.add(id);
+					}
+				} else {
+					throw new SaveException(null, "unexpected debit_id: " + id);	
+				}
 			}
 			if( 0 >= id || 0 < code ) {
 				if( db.retrieveDebitCodeList(a->a.id() == code).isEmpty() ) {
 					throw new SaveException("debit"+i+".code_name", "unknown code");
 				}
+				if( null == description || description.trim().isEmpty() ) {
+					throw new SaveException("credit"+i+".description", "need description");
+				}
+				debitSum += (price * quantity);
 			}
 			if( 0 > price ) {
 				throw new SaveException("debit"+i+".price_str", "need positive price");
@@ -291,7 +320,6 @@ public class SlipUpdateController implements HestiaController {
 			if( 0 > quantity ) {
 				throw new SaveException("debit"+i+".quantity", "need positive quantity");
 			}
-			debitSum += (price * quantity);
 		}
 		for( int i=0; i<creditList.length(); i++ ) {
 			JSONObject creditData = creditList.getJSONObject(i);
@@ -302,18 +330,35 @@ public class SlipUpdateController implements HestiaController {
 			if( 0 > slip_id && 0 <= id ) {
 				throw new SaveException(null, "unexpected credit_id: " + id);
 			}
-			if( null == description || description.trim().isEmpty() ) {
-				throw new SaveException("credit"+i+".description", "need description");
+			if( 0 < id ) {
+				if( 0 < slip_id ) {
+					if( !orgCreditIdSet.contains(id) ) {
+						throw new SaveException("debit"+i+".description", "need description");
+					} else {
+						creditIdSet.add(id);
+					}
+				} else {
+					throw new SaveException(null, "unexpected debit_id: " + id);	
+				}
 			}
 			if( 0 >= id || 0 < code ) {
 				if( db.retrieveDebitCodeList(a->a.id() == code).isEmpty() ) {
 					throw new SaveException("credit"+i+".code_name", "unknown code");
-				}	
+				}
+				if( null == description || description.trim().isEmpty() ) {
+					throw new SaveException("credit"+i+".description", "need description");
+				}
+				creditSum += price;
 			}
 			if( 0 > price ) {
 				throw new SaveException("credit"+i+".price_str", "need positive price");
 			}
-			creditSum += price;
+		}
+		if( !debitIdSet.containsAll(orgDebitIdSet) ) {
+			throw new SaveException(null, "invalid form data");
+		}
+		if( !creditIdSet.containsAll(orgCreditIdSet) ) {
+			throw new SaveException(null, "invalid form data");
 		}
 		if( debitSum != creditSum ) {
 			throw new SaveException(null, "unbalanced slip");

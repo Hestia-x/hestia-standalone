@@ -246,7 +246,7 @@ public class SlipUpdateController implements HestiaController {
 			JSONArray orgDebitList = originData.getJSONArray("debit");
 			JSONArray orgCreditList = originData.getJSONArray("credit");
 			
-			if( slipData.getInt("id") != orgSlipData.getInt("slip") ) {
+			if( slipData.getInt("id") != orgSlipData.getInt("id") ) {
 				throw new SaveException(null, "different slip id");
 			}
 			for( int i=0; i<orgDebitList.length(); i++ ) {
@@ -297,7 +297,7 @@ public class SlipUpdateController implements HestiaController {
 			if( 0 < id ) {
 				if( 0 < slip_id ) {
 					if( !orgDebitIdSet.contains(id) ) {
-						throw new SaveException("debit"+i+".description", "need description");
+						throw new SaveException("debit"+i+".description", "unexpected debit_id");
 					} else {
 						debitIdSet.add(id);
 					}
@@ -333,7 +333,7 @@ public class SlipUpdateController implements HestiaController {
 			if( 0 < id ) {
 				if( 0 < slip_id ) {
 					if( !orgCreditIdSet.contains(id) ) {
-						throw new SaveException("debit"+i+".description", "need description");
+						throw new SaveException("credit"+i+".description", "unexpected credit_id");
 					} else {
 						creditIdSet.add(id);
 					}

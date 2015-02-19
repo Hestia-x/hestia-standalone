@@ -40,6 +40,9 @@ public class RequestPath {
 	public int getInt(int index, int defaultValue) {
 		String value = get(index);
 		if( null != value ) {
+			if( value.endsWith("/") ) {
+				value = value.substring(0, value.length()-1);
+			}
 			try {
 				return Integer.parseInt(value);
 			} catch( Exception ex ) {

@@ -49,6 +49,9 @@ public class SlipController implements HestiaController {
 		case 1: actionFunction = this::slipDetail; break;
 		default: actionFunction = null;
 		}
+		if( 2 == path.size() ) {
+			return slipAction(req, path);
+		}
 		if( null == actionFunction ) {
 			notFound(req);
 		}
@@ -124,5 +127,24 @@ public class SlipController implements HestiaController {
 		valueMap.put("debitSummary", debitSummary);
 		valueMap.put("creditSummary", creditSummary);
 		return "/account_book/slip_detail.html";
+	}
+	
+	private HttpResponse slipAction(HttpRequest req, RequestPath path) throws Exception {
+		Integer slipId = path.getInt(0, Integer.MIN_VALUE);
+		List<Slip> slipList = db.retrieveSlipList(a->a.id()==slipId);
+		if( slipList.isEmpty() ) {
+			notFound(req);
+		}
+		String action = path.get(1);
+		switch( action ) {
+		case "delete":
+			db.deleteSlip(slipId, true);
+			return this.redirectTo("/account_book/slip/");
+		case "edit":
+			return this.redirectTo("/account_book/slipform/"+slipId);
+		default:
+			notFound(req);
+			return null;
+		}
 	}
 }

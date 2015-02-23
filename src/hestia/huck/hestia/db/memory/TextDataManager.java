@@ -8,12 +8,10 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
-import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
 
 
 public class TextDataManager {
@@ -50,41 +48,119 @@ public class TextDataManager {
 		DataLine debit2Line(MemoryDebit asset);
 		DataLine credit2Line(MemoryCredit asset);
 		
-		MemoryAsset line2Asset(DataLine line);
-		MemoryShop line2Shop(DataLine line);
-		MemoryDebitCode line2DebitCode(DataLine line);
-		MemoryCreditCode line2CreditCode(DataLine line);
-		MemorySlip line2Slip(DataLine line);
-		MemoryDebit line2Debit(DataLine line);
-		MemoryCredit line2Credit(DataLine line);
+		MemoryAsset line2Asset(DataLine line) throws Exception;
+		MemoryShop line2Shop(DataLine line) throws Exception;
+		MemoryDebitCode line2DebitCode(DataLine line) throws Exception;
+		MemoryCreditCode line2CreditCode(DataLine line) throws Exception;
+		MemorySlip line2Slip(DataLine line) throws Exception;
+		MemoryDebit line2Debit(DataLine line) throws Exception;
+		MemoryCredit line2Credit(DataLine line) throws Exception;
 	}
 	
 	static class DataLine {
+		private String line;
 		private String type;
 		private int id;
-		private ArrayList<String> columns;
-		public DataLine(String type, int id, ArrayList<String> columns) {
+		private ArrayList<String> columnList;
+		public String getLine() {
+			return line;
+		}
+		public int getId() {
+			return id;
+		}
+		public List<String> columnList() {
+			return columnList;
+		}
+		public DataLine(String line) throws Exception {
+			this.line = line;
+			String[] columns = line.split("\t");
+			if( 2 >= columns.length ) {
+				throw new Exception("unknown data format: " + line);
+			}
+			this.type = textDecode(columns[0]);
+			try {
+				this.id = Integer.parseInt(columns[1]);
+			} catch(Exception ex){
+				throw new Exception("unknown data format: " + line);
+			}
+			this.columnList = new ArrayList<>();
+			for( int i=2; i<columns.length; i++ ) {
+				this.columnList.add(textDecode(columns[i]));
+			}
+		}
+		public DataLine(String type, int id, String... columns) {
+			StringBuffer buf = new StringBuffer();
+			buf.append(textEncode(type)).append("\t");
+			buf.append(id).append("\t");
+			for( String column : columns ) {
+				buf.append(textEncode(column)).append("\t");
+			}
+			buf.deleteCharAt(buf.length()-1);
+			this.line = buf.toString();
 			this.type = type;
 			this.id = id;
-			this.columns = columns;
+			this.columnList = new ArrayList<>();
+			if( null != columns ) {
+				for( int i=0; i<columns.length; i++ ) {
+					columnList.add(columns[i]);
+				}
+			}
 		}
 	}
 	private static String textEncode(String src) {
-		return src;
+		if( null == src ) {
+			return "#0";
+		}
+		if( "".equals(src) ) {
+			return "#S";
+		}
+		StringBuffer buf = new StringBuffer();
+		for( int i=0; i<src.length(); i++ ) {
+			char ch = src.charAt(i);
+			switch(ch) {
+			case '\r': buf.append("#r"); break;
+			case '\n': buf.append("#n"); break;
+			case '\t': buf.append("#t"); break;
+			case '#': buf.append("##"); break;
+			default: buf.append(ch); break;
+			}
+		}
+		return buf.toString();
 	}
 	private static String textDecode(String src) {
-		return src;
+		if( null == src ) return null;
+		if( "#0".equals(src) ) {
+			return null;
+		}
+		if( "#S".equals(src) ) {
+			return "";
+		}
+		StringBuffer buf = new StringBuffer(src.length());
+		boolean isEscape = false;
+		for( int i=0; i<src.length(); i++ ) {
+			char ch = src.charAt(i);
+			if( isEscape ) {
+				switch(ch) {
+				case 'r': buf.append('\r'); break;
+				case 'n': buf.append('\n'); break;
+				case 't': buf.append('\t'); break;
+				default: buf.append(ch); break;
+				}				
+				isEscape = false;
+			} else {
+				if( '#' == ch ) {
+					isEscape = true;
+				} else {
+					buf.append(ch);
+				}
+			}
+		}
+		return buf.toString();
 	}
 	
-	private static void write(OutputStream output, StringBuffer buf, DataLine line) throws Exception {
-		buf.setLength(0);
-		output.write(buf.toString().getBytes("UTF-8"));
+	private static void write(OutputStream output, DataLine line) throws Exception {
+		output.write((line.getLine()+"\n").getBytes("UTF-8"));
 	}
-	private static DataLine read(String line) {
-		return null;
-	}
-	
-
 	private static class Dumper extends HestiaMemoryDB.Dumper {
 		private OutputStream output;
 		private Dumper(OutputStream output) {
@@ -94,33 +170,33 @@ public class TextDataManager {
 		@Override
 		protected void dump(HestiaMemoryDB db) throws Exception {
 			TextDataConverter converter = CURRENT_CONVERTER.newInst();
-			StringBuffer buf = new StringBuffer();
 			try {
-				buf.setLength(0);
+				StringBuffer buf = new StringBuffer();
 				buf.append("HESTIA").append("\n");
 				buf.append("VERSION\t").append(textEncode(converter.getVersion())).append("\n");
 				buf.append("\n");
 				output.write(buf.toString().getBytes("UTF-8"));
 				
 				for( MemoryAsset asset : assetMap(db).values() ) {
-					write( output, buf, converter.asset2Line(asset));
+					write(output, converter.asset2Line(asset));
 				}
 				for( MemoryShop shop : shopMap(db).values() ) {
-					write( output, buf, converter.shop2Line(shop));
+					write(output, converter.shop2Line(shop));
 				}
 				for( MemoryDebitCode debitCode : debitCodeMap(db).values() ) {
-					write( output, buf, converter.debitCode2Line(debitCode));
+					write(output, converter.debitCode2Line(debitCode));
 				}
 				for( MemoryCreditCode creditCode : creditCodeMap(db).values() ) {
-					write( output, buf, converter.creditCode2Line(creditCode));
+					write(output, converter.creditCode2Line(creditCode));
 				}
 				for( MemorySlip slip : slipMap(db).values() ) {
-					write( output, buf, converter.slip2Line(slip));
+					output.write("\n".getBytes("UTF-8"));
+					write(output, converter.slip2Line(slip));
 					for( Debit debit : db.retrieveDebitList(a->a.slip().id()==slip.id()) ) {
-						write( output, buf, converter.debit2Line((MemoryDebit)debit));
+						write(output, converter.debit2Line((MemoryDebit)debit));
 					}
 					for( Credit credit : db.retrieveCreditList(a->a.slip().id()==slip.id()) ) {
-						write( output, buf, converter.credit2Line((MemoryCredit)credit));
+						write(output, converter.credit2Line((MemoryCredit)credit));
 					}
 				}
 			} finally {
@@ -128,7 +204,10 @@ public class TextDataManager {
 			}
 		}
 	}
-	
+	@FunctionalInterface
+	private static interface ConvertFunc<FROM, TO> {
+		TO apply(FROM from) throws Exception;
+	}
 	private static class Loader extends HestiaMemoryDB.Loader {
 		private String name;
 		private InputStream source;
@@ -138,7 +217,7 @@ public class TextDataManager {
 			this.source = source;
 		}
 
-		private static <Data> void add(HestiaMemoryDB db, DataLine dataLine, Function<DataLine, Data> dataConverter, BiConsumer<HestiaMemoryDB, Data> addFunc) throws Exception {
+		private static <Data> void add(HestiaMemoryDB db, DataLine dataLine, ConvertFunc<DataLine, Data> dataConverter, BiConsumer<HestiaMemoryDB, Data> addFunc) throws Exception {
 			Data data = dataConverter.apply(dataLine);
 			addFunc.accept(db, data);
 		}
@@ -181,7 +260,9 @@ public class TextDataManager {
 							converter = converter.newInst();
 						}
 					} else if( 2 == stat ) {
-						DataLine dataLine = read(line);
+						if( line.isEmpty() ) continue;
+						
+						DataLine dataLine = new DataLine(line);
 						switch( dataLine.type ) {
 						case "asset": add(db, dataLine, converter::line2Asset, this::addAsset); break;
 						case "shop": add(db, dataLine, converter::line2Shop, this::addShop); break;

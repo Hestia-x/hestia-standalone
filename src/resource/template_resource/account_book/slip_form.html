@@ -92,7 +92,8 @@
 		function __event_focusout_number(event) {
 			var input = event.target.value;
 			var scale = event.data.scale;
-			input = Math.floor(input * Math.pow(10, scale));
+			console.log(input, Math.pow(10, scale), input * Math.pow(10, scale));
+			input = Math.round(input * Math.pow(10, scale));
 			event.target.value = make_number_string(input, scale);
 			event.data.storage.value = input;
 		}

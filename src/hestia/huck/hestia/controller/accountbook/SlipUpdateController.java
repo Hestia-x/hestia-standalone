@@ -271,7 +271,7 @@ public class SlipUpdateController implements HestiaController {
 		}
 		if( null != slip_datetimeStr && !slip_datetimeStr.trim().isEmpty()) {
 			try {
-				slip_datetime = LocalDateTime.parse(slip_datetimeStr, DateTimeFormatter.ofPattern("uuuu-MM-dd kk:mm:ss"));
+				slip_datetime = LocalDateTime.parse(slip_datetimeStr, DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss"));
 			} catch( DateTimeParseException ex ) {
 				throw new SaveException("slip.datetime", "unknown datetime format", ex);
 			}
@@ -342,7 +342,7 @@ public class SlipUpdateController implements HestiaController {
 				}
 			}
 			if( 0 >= id || 0 < code ) {
-				if( db.retrieveDebitCodeList(a->a.id() == code).isEmpty() ) {
+				if( db.retrieveCreditCodeList(a->a.id() == code).isEmpty() ) {
 					throw new SaveException("credit"+i+".code_name", "unknown code");
 				}
 				if( null == description || description.trim().isEmpty() ) {

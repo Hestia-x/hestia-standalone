@@ -41,6 +41,7 @@ public class SystemController implements HestiaController {
 		ActionFunction actionFunction = null;
 		switch( path.get(0) ) {
 		case "load/": actionFunction = this::load; break;
+		case "save/": actionFunction = this::save; break;
 		default: notFound(req); break;
 		}
 		return renderer.render(req, actionFunction);
@@ -91,6 +92,13 @@ public class SystemController implements HestiaController {
 		}
 		notFound(req);
 		return null;
+	}
+	
+	private String save(HttpRequest req, HashMap<String, Object> valueMap) throws Exception {
+		valueMap.put("filename", db.loadedDataName());
+		File file = new File(dataDir, db.loadedDataName());
+		db.save(FileDataManager.getDumper(file));
+		return "/system/save_success.html";
 	}
 }
 

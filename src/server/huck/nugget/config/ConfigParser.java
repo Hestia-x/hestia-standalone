@@ -2,7 +2,7 @@ package huck.nugget.config;
 
 
 public class ConfigParser {
-	public static Config parseConfig(String src) {
+	public static Config parseConfig(CharSequence src) {
 		Tokenizer tokenizer = new Tokenizer(src);
 		return parseConfig(tokenizer);
 	}

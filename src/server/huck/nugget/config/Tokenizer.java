@@ -1,11 +1,11 @@
 package huck.nugget.config;
 
 class Tokenizer {
-	private String src;
+	private CharSequence src;
 	private int curIdx;	
 	private String next;
 	
-	public Tokenizer(String src) {
+	public Tokenizer(CharSequence src) {
 		this.src = src;
 		this.curIdx = 0;
 		this.next = null;

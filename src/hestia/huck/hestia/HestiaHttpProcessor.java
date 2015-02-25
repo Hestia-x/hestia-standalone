@@ -1,6 +1,5 @@
 package huck.hestia;
 
-import huck.common.jdbc.DBConnectionManager;
 import huck.hestia.controller.DefaultController;
 import huck.hestia.controller.StaticResourceController;
 import huck.hestia.controller.accountbook.AccountBookController;
@@ -9,8 +8,8 @@ import huck.hestia.controller.accountbook.FlowController;
 import huck.hestia.controller.accountbook.SlipController;
 import huck.hestia.controller.accountbook.SlipUpdateController;
 import huck.hestia.controller.system.SystemController;
+import huck.hestia.db.memory.FileDataManager;
 import huck.hestia.db.memory.HestiaMemoryDB;
-import huck.hestia.db.memory.LoaderMysql;
 import huck.simplehttp.HttpException;
 import huck.simplehttp.HttpProcessor;
 import huck.simplehttp.HttpRequest;
@@ -34,23 +33,12 @@ public class HestiaHttpProcessor implements HttpProcessor {
 	private Logger logger() {
 		return Logger.getLogger("hestia");
 	}
-	public HestiaHttpProcessor() throws Exception {
-		logger().info("Load Database");
-		Class.forName(org.gjt.mm.mysql.Driver.class.getName());
-		String dbUrl = "jdbc:mysql://127.0.0.1:3306/account_book?characterEncoding=UTF-8";
-		String dbUser = "root";
-		String dbPassword = null;
-		File dataDir = new File("data");
-		
+	public HestiaHttpProcessor(String dbFileName, int moneyScale) throws Exception {
+		logger().info("[Load] Data");
 		HestiaMemoryDB db = new HestiaMemoryDB();
-		db.load(new LoaderMysql(new DBConnectionManager(dbUrl, dbUser, dbPassword)));
-		
-		int moneyScale = 2;
-
-//		FileDataManager dataMgr = new FileDataManager(new File("test.data"));
-//		HestiaDB db = new HestiaMemoryDB(dataMgr.getLoader());
-		
-		logger().info("Finish Loading");
+		File dbFile = new File(dbFileName);
+		db.load(FileDataManager.getLoader(dbFile));
+		logger().info("[Load] Finish Loading");
 		
 		VelocityRenderer renderer = new VelocityRenderer(moneyScale);
 
@@ -63,7 +51,7 @@ public class HestiaHttpProcessor implements HttpProcessor {
 		controllerMap.put("/account_book/slip/", new SlipController(db, renderer));
 		controllerMap.put("/account_book/slipform/", new SlipUpdateController(db, renderer));
 		
-		controllerMap.put("/system/", new SystemController(db, dataDir, renderer));
+		controllerMap.put("/system/", new SystemController(db, dbFile, renderer));
 		
 		controllerMap.put("/css/", new StaticResourceController());
 		controllerMap.put("/fonts/", new StaticResourceController());

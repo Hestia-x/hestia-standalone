@@ -11,23 +11,16 @@ import huck.simplehttp.HttpResponse;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 
 public class SystemController implements HestiaController {
 	private HestiaMemoryDB db;
-	private File dataDir;
+	private File dbFile;
 	private VelocityRenderer renderer;
 	
-	public SystemController(HestiaMemoryDB db, File dataDir, VelocityRenderer renderer) throws IOException {
+	public SystemController(HestiaMemoryDB db, File dbFile, VelocityRenderer renderer) throws IOException {
 		this.db = db;
-		this.dataDir = dataDir;
+		this.dbFile = dbFile;
 		this.renderer = renderer;
 	}
 	
@@ -40,64 +33,33 @@ public class SystemController implements HestiaController {
 
 		ActionFunction actionFunction = null;
 		switch( path.get(0) ) {
-		case "load/": actionFunction = this::load; break;
+		case "reload/": actionFunction = this::reload; break;
 		case "save/": actionFunction = this::save; break;
 		default: notFound(req); break;
 		}
 		return renderer.render(req, actionFunction);
 	}
 	
-	private String load(HttpRequest req, HashMap<String, Object> valueMap) throws Exception {
-		RequestPath path = (RequestPath)req.getAttribute("path");
-		if( 1 == path.size() ) {
-			ArrayList<HashMap<String, String>> fileList = new ArrayList<>();
-			File[] children = dataDir.listFiles();
-			Arrays.sort(children, Comparator.comparingLong((File a)->a.lastModified()).reversed());
-			for( File f : dataDir.listFiles() ) {
-				if( f.isFile() ) {
-					HashMap<String, String> data = new HashMap<>();
-					data.put("name", f.getName());
-					LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(f.lastModified()), ZoneId.of("GMT"));
-					data.put("lastModified", dateTime.format(DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss")));
-					long size = f.length();
-					if( size < 10240 ) {
-						data.put("size", size + " bytes");	
-					} else if( size < 1024*1024*10 ) {
-						data.put("size", (size/1024) + " KB");
-					} else {
-						data.put("size", (size/1024/1024) + " MB");
-					}
-					fileList.add(data);
-				}
+	private String reload(HttpRequest req, HashMap<String, Object> valueMap) throws Exception {
+		if( !db.isModified() || "true".equals(req.getParameter("lostchange")) ) {
+			valueMap.put("filename", dbFile.getName());
+			try {
+				db.load(FileDataManager.getLoader(dbFile));
+				String loadedDataName = db.loadedDataName();
+				req.setAttribute("loadedDataName", loadedDataName);
+				return "/system/load_success.html";
+			} catch( Exception ex ) {
+				logger().error(ex, ex);
+				return "/system/load_fail.html";
 			}
-			valueMap.put("fileList", fileList);
-			return "/system/load_list.html";
-		} else if( 2 == path.size() ) {
-			if( !db.isModified() || "true".equals(req.getParameter("lostchange")) ) {
-				String filename = path.get(1);
-				valueMap.put("filename", filename);
-				File file = new File(dataDir, filename);
-				try {
-					db.load(FileDataManager.getLoader(file));
-					String loadedDataName = db.loadedDataName();
-					req.setAttribute("loadedDataName", loadedDataName);
-					return "/system/load_success.html";
-				} catch( Exception ex ) {
-					logger().error(ex, ex);
-					return "/system/load_fail.html";
-				}
-			} else {
-				return "/system/load_check_lostchange.html";
-			}
+		} else {
+			return "/system/load_check_lostchange.html";
 		}
-		notFound(req);
-		return null;
 	}
 	
 	private String save(HttpRequest req, HashMap<String, Object> valueMap) throws Exception {
 		valueMap.put("filename", db.loadedDataName());
-		File file = new File(dataDir, db.loadedDataName());
-		db.save(FileDataManager.getDumper(file));
+		db.save(FileDataManager.getDumper(dbFile));
 		return "/system/save_success.html";
 	}
 }

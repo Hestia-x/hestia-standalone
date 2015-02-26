@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project hestia-standalone">
+	<target name="create_run_jar">
+		<delete dir="build/" />
+		<mkdir dir="build/"/>
+		<mkdir dir="build/src/"/>
+		<copy todir="build/src/" overwrite="true">
+			<fileset dir="src/server" />
+			<fileset dir="src/hestia" />
+			<fileset dir="src/resource" />
+		</copy>
+		<mkdir dir="build/bin/"/>
+		<copy todir="build/bin/" overwrite="true">
+			<fileset dir="src/server" />
+			<fileset dir="src/hestia" />
+			<fileset dir="src/resource" />
+		</copy>
+		<delete>
+			<fileset dir="build/bin/" includes="**/*.java"/>
+		</delete>
+		<javac srcdir="src" destdir="build/bin/" debug="false" encoding="UTF-8">
+			<classpath>
+				<fileset dir="libs/">
+					<include name="**/*.jar" />
+				</fileset>
+			</classpath>
+		</javac>
+		<jar destfile="hestia.jar" filesetmanifest="mergewithoutmain">
+			<manifest>
+				<attribute name="Main-Class" value="huck.hestia.Hestia"/>
+				<attribute name="Class-Path" value="."/>
+			</manifest>
+			<fileset dir="build/bin/"/>
+			<zipfileset excludes="META-INF/*.SF" src="libs/commons-collections-3.2.1.jar"/>
+			<zipfileset excludes="META-INF/*.SF" src="libs/commons-lang-2.4.jar"/>
+			<zipfileset excludes="META-INF/*.SF" src="libs/commons-logging-1.1.jar"/>
+			<zipfileset excludes="META-INF/*.SF" src="libs/log4j-1.2.12.jar"/>
+			<zipfileset excludes="META-INF/*.SF" src="libs/velocity-1.7.jar"/>
+			<zipfileset excludes="META-INF/*.SF" src="libs/mysql-connector-java-5.1.5-bin.jar"/>
+		</jar>
+</target>
+</project>

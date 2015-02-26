@@ -73,7 +73,11 @@ public class HestiaMemoryDB implements HestiaDB<Loader, Dumper> {
 		if( null == shop ) {
 			throw new NoSuchElementException("no shopId: " + shopId);
 		}
-		MemorySlip slip = new MemorySlip(slipMap.lastKey()+1, dttm, shop);
+		int lastKey = 0;
+		if( !slipMap.isEmpty() ) {
+			lastKey = slipMap.lastKey();
+		}
+		MemorySlip slip = new MemorySlip(lastKey+1, dttm, shop);
 		slipMap.put(slip.id(), slip);
 		modified = true;
 		return slip;
@@ -94,7 +98,11 @@ public class HestiaMemoryDB implements HestiaDB<Loader, Dumper> {
 		if( null == description ) {
 			description = debitCode.name();
 		}
-		MemoryDebit debit = new MemoryDebit(debitMap.lastKey()+1, slip, debitCode, description, unitPrice, quantity);
+		int lastKey = 0;
+		if( !debitMap.isEmpty() ) {
+			lastKey = debitMap.lastKey();
+		}
+		MemoryDebit debit = new MemoryDebit(lastKey+1, slip, debitCode, description, unitPrice, quantity);
 		debitMap.put(debit.id(), debit);
 		modified = true;
 		return debit;
@@ -115,7 +123,11 @@ public class HestiaMemoryDB implements HestiaDB<Loader, Dumper> {
 		if( null == description ) {
 			description = creditCode.name();
 		}
-		MemoryCredit credit = new MemoryCredit(creditMap.lastKey()+1, slip, creditCode, description, price);
+		int lastKey = 0;
+		if( !creditMap.isEmpty() ) {
+			lastKey = creditMap.lastKey();
+		}
+		MemoryCredit credit = new MemoryCredit(lastKey+1, slip, creditCode, description, price);
 		creditMap.put(credit.id(), credit);
 		modified = true;
 		return credit;

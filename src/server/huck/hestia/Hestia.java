@@ -6,6 +6,7 @@ import huck.simplehttp.HttpServer;
 
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -73,6 +74,7 @@ public class Hestia {
 		AtomicBoolean stopSignal = new AtomicBoolean(false);
 		HestiaHttpProcessor processor = new HestiaHttpProcessor(dbFileName, moneyScale10);
 		HttpServer server = new HttpServer(processor, 4, new InetSocketAddress(port));
+		logger().info("http://" + Inet4Address.getLocalHost().getHostAddress() + ":" + port + "/");
 		server.runServer(stopSignal);
 	}
 }

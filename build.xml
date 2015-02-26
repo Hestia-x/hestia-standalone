@@ -25,9 +25,13 @@
 				</fileset>
 			</classpath>
 		</javac>
-		<jar destfile="hestia.jar" filesetmanifest="mergewithoutmain">
+		<mkdir dir="build/dist/"/>
+		<copy todir="build/dist/" overwrite="true">
+			<fileset dir="sample/" />
+		</copy>
+		<jar destfile="build/dist/hestia.jar" filesetmanifest="mergewithoutmain">
 			<manifest>
-				<attribute name="Main-Class" value="huck.hestia.Hestia"/>
+				<attribute name="Main-Class" value="huck.hestia.HestiaSwing"/>
 				<attribute name="Class-Path" value="."/>
 			</manifest>
 			<fileset dir="build/bin/"/>

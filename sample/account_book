@@ -1,0 +1,79 @@
+HESTIA
+VERSION	1
+
+asset	10	현금	#0
+asset	20	Deutschbank main	DE40 1007 0024 0192 1147 00
+asset	30	Amazon Credit Card	#0
+asset	101	수아 외상	#0
+asset	102	윤재 외상	#0
+asset	103	OnNet EU 외상	#0
+asset	104	지철 가족 외상	#0
+shop	101	Netto
+shop	102	Ullrich
+shop	103	Kalstadt
+shop	104	Rossmann
+shop	105	Steinecke
+shop	106	신라
+shop	107	DM
+shop	121	McDonalds
+shop	122	Kadewe
+shop	123	Saturn
+shop	124	냠냠
+shop	130	Ikea
+shop	201	Amazon DE
+shop	202	windeln.de
+shop	203	Google
+shop	204	Linkedin
+shop	205	Adobe
+shop	206	Netflix
+shop	210	Pizza Max
+shop	301	BVG
+shop	302	Vatenfall
+shop	303	O2
+shop	304	1und1
+shop	305	Becker & Kries Grundstücks GmbH
+shop	501	2014 Chrismas Market
+shop	901	수아
+shop	902	윤재
+shop	910	권설주
+shop	911	한
+shop	998	Internal
+shop	999	etc.
+debitCode	111	식비 일반	#0	#0
+debitCode	112	식비 간식	#0	#0
+debitCode	113	식비 외식	#0	#0
+debitCode	121	소모품 가족	#0	#0
+debitCode	122	소모품 슬현	#0	#0
+debitCode	123	소모품 땅콩	#0	#0
+debitCode	131	생활용품 가족	#0	#0
+debitCode	132	생활용품 슬현	#0	#0
+debitCode	141	교통비	#0	#0
+debitCode	211	집세 - Kalt	#0	#0
+debitCode	212	집세 - Neben	#0	#0
+debitCode	213	전기세	#0	#0
+debitCode	214	통신/인터넷	#0	#0
+debitCode	221	고정 인터넷 서비스	#0	#0
+debitCode	231	한국 고정비	#0	#0
+debitCode	311	수아 교육비	#0	#0
+debitCode	312	수아 용돈	#0	#0
+debitCode	501	수아 외상	101	수아 외상
+debitCode	502	윤재 외상	102	윤재 외상
+debitCode	503	OnNet EU 외상	103	OnNet EU 외상
+debitCode	504	지철 가족 외상	104	지철 가족 외상
+debitCode	910	현금	10	현금
+debitCode	920	Deutschbank main	20	Deutschbank main
+debitCode	930	Amazon Credit Card	30	Amazon Credit Card
+debitCode	981	어디 썼는지 모름	#0	#0
+debitCode	999	etc.	#0	#0
+creditCode	101	월급	#0	월급
+creditCode	102	킨더겔트	#0	킨더겔트
+creditCode	103	아마존 카드 포인트	#0	아마존 카드 포인트
+creditCode	199	기타 수입	#0	기타 수입
+creditCode	501	수아 외상	101	수아 외상
+creditCode	502	윤재 외상	102	윤재 외상
+creditCode	503	OnNet EU 외상	103	OnNet EU 외상
+creditCode	504	지철 가족 외상	104	지철 가족 외상
+creditCode	910	현금	10	현금
+creditCode	920	Deutschbank main	20	Deutschbank main
+creditCode	921	Girocard - Deutschbank main	20	Girocard - Deutschbank main
+creditCode	930	Amazon Credit Card	30	Amazon Credit Card

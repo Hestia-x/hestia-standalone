@@ -144,6 +144,9 @@ public final class HttpResponse {
 		setBodySupplier(bodySupplier);
 	}
 	
+	public String getStatusCode() {
+		return this.statusCode;
+	}
 	public void setStatus(Status status) {
 		this.statusCode = status.code();
 		this.statusString = status.message();

@@ -101,47 +101,56 @@ public class HttpServer {
 		HttpResponseWriter resWriter;
 	}
 	
+	private void accessLog(HttpRequest req, HttpResponse res) {
+		if( null != req && null == req.getAttribute("NO_LOG") ) {
+			Logger.getLogger("http").info("ACCESS: " + req.getMethod() + " " + req.getRequestURI() + "\t" + res.getStatusCode() + "\t" + req.getContentLength() + " req bytes");
+		}
+	}
+	
 	private int processRead(SocketChannel sockCh, ConnectionData connData) throws IOException {
 		HttpRequestParser parser = connData.parser;
 		ByteBuffer buffer = connData.buffer;
 		
+		HttpRequest req = null;
 		HttpResponseWriter resWriter = null;
 		try {
 			buffer.clear();
 			int readLen = sockCh.read(buffer);
 			if( 0 <= readLen ) {
 				buffer.flip();
-				HttpRequest req = parser.addBytes(buffer.array(), 0, buffer.limit());
+				req = parser.addBytes(buffer.array(), 0, buffer.limit());
 				if( null != req ) {
-					Logger.getLogger("http").info("ACCESS: " + req.getMethod() + " " + req.getRequestURI() + "\t" + req.getContentLength() + " bytes");
 					HttpResponse res = processor.process(req);
 					if( null == res ) {
 						throw new HttpException(HttpResponse.Status.NOT_FOUND, "Not Found: " + req.getRequestPath());
 					}
+					accessLog(req, res);
 					resWriter = new HttpResponseWriter(res.getResponseData(), buffer);
 				}
 			} else {
 				return -1;
 			}
 		} catch(HttpException ex) {
-			Logger.getLogger("http").info(ex.getStatus() + "\t" + ex.getMessage());
 			HttpResponse res = new HttpResponse(ex.getStatus(), ex.getMessage().getBytes("UTF-8"));
 			res.setHeader("Content-Type", "text/plain; charset=utf-8");
 			res.disableKeepAlive();
+			accessLog(req, res);
+			Logger.getLogger("http").info(ex.getStatus() + "\t" + ex.getMessage());
 			try {
 				resWriter = new HttpResponseWriter(res.getResponseData(), buffer);
 			} catch (Exception ignore) {
 				return -1;
 			}
 		} catch(Exception ex) {
-			Logger.getLogger("http").fatal(ex, ex);
 			String message = "INTERNAL_SERVER_ERROR: " + ex.getClass().getName();
 			if( null != ex.getMessage() ) {
 				message += " - " + ex.getMessage();
 			}
 			HttpResponse res = new HttpResponse(HttpResponse.Status.INTERNAL_SERVER_ERROR, message.getBytes("UTF-8"));
 			res.setHeader("Content-Type", "text/plain; charset=utf-8");
-			res.disableKeepAlive();
+			res.disableKeepAlive();			
+			accessLog(req, res);
+			Logger.getLogger("http").fatal(ex, ex);
 			try {
 				resWriter = new HttpResponseWriter(res.getResponseData(), buffer);
 			} catch (Exception ignore) {

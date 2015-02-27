@@ -37,7 +37,7 @@ public class StaticResourceController implements HestiaController {
 		if( contentType.startsWith("text") ) {
 			contentType += "; charset=utf8";
 		}
-		
+		req.setAttribute("NO_LOG", "true");
 		HttpResponse res = new HttpResponse(HttpResponse.Status.OK, ()->Channels.newChannel(resourceUrl.openStream()));
 		res.setHeader("Content-Type", contentType);
 		return res;

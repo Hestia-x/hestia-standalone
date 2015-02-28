@@ -24,22 +24,22 @@
 			</ul>
 			<p class="navbar-text" style="margin-left: 70px; font-size:20px; margin-top:11px; margin-bottom:10px;"><b>$!__req.getAttribute("loadedDataName")</b></p>
 			<ul class="nav navbar-nav navbar-right">
-				<li><button id="add_slip_btn" type="button" class="btn btn-default navbar-btn">Add Slip</button></li>
-				<li class="dropdown #if($menuName=="system") active #end">
-					<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">System <span class="caret"></span></a>
-					<ul class="dropdown-menu" role="menu">
-					<li><a href="/system/config/">Config</a></li>
-					<li><a href="/system/reload/">Reload</a></li>
-					<li><a href="/system/save/">Save</a></li>
-					</ul>
-				</li>
+				<li><button id="nav_btn_add_slip" type="button" class="btn btn-default navbar-btn" style="margin-right:10px">Add Slip</button></li>
+				<li><button id="nav_btn_reload" type="button" class="btn btn-default navbar-btn" style="margin-right:10px">Reload</button></li>
+				<li><button id="nav_btn_save" type="button" class="btn btn-default navbar-btn" style="margin-right:10px">Save</button></li>
 			</ul>
 		</div>
 	</div>
 </nav>
 <script>
-	$("#add_slip_btn").bind("click", function() {
+	$("#nav_btn_add_slip").bind("click", function() {
 		document.location = "/account_book/slipform/";
+	});
+	$("#nav_btn_reload").bind("click", function() {
+		document.location = "/system/reload/";
+	});
+	$("#nav_btn_save").bind("click", function() {
+		document.location = "/system/save/";
 	});
 </script>
 #end

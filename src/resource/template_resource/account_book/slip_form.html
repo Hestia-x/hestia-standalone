@@ -31,19 +31,19 @@
 		
 		var shop_code = [
 #foreach($code in $shopList)
-			{"code":$code.id(), "name": "$code.name()"},
+			{"code":$code.id(), "name": "$code.id() $code.name()"},
 #end
 		];
 		var debit_code = [
 			{"code":-1, "name": "NONE"},
 #foreach($code in $debitCodeList)
-			{"code":$code.id(), "name": "$code.name()", "default_description": "$!code.defaultDescription()"},
+			{"code":$code.id(), "name": "$code.id() $code.name()", "default_description": "$!code.defaultDescription()"},
 #end
 		];		
 		var credit_code = [
 			{"code":-1, "name": "NONE"},
 #foreach($code in $creditCodeList)
-			{"code":$code.id(), "name": "$code.name()", "default_description": "$!code.defaultDescription()"},
+			{"code":$code.id(), "name": "$code.id() $code.name()", "default_description": "$!code.defaultDescription()"},
 #end
 		];
 

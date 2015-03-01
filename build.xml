@@ -53,5 +53,6 @@
 			<zipfileset excludes="META-INF/*.SF" src="libs/log4j-1.2.12.jar"/>
 			<zipfileset excludes="META-INF/*.SF" src="libs/velocity-1.7.jar"/>
 		</jar>
+		<zip destfile="build/hestia_version1_latest.zip" basedir="build/dist/"/>
 </target>
 </project>

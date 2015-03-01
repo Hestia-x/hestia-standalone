@@ -1,3 +1,0 @@
-port         7077
-data_file    account_book
-money_scale  1

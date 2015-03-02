@@ -6,8 +6,7 @@ Web-based household account book application.
 
 ## Install and Execute
 ### Install
-1. Download
-[Download Latest Version](/dist/hestia_version1_latest.zip)
+1. [Download Latest Version](/dist/hestia_version1_latest.zip)
 1. 
 
 ## Terms

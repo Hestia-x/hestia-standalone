@@ -1,11 +1,14 @@
-# hestia-standalone
-finance manager for family
+# Hestia??
+Web-based household account book application.
 
 ## Requirement
-* > Java 8.0  [Java Download](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
-* Windows, Mac OS, Linux
+* Java 8.0  [Download](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
 
 ## Install and Execute
+### Install
+1. Download
+[Download Latest Version](/dist/hestia_version1_latest.zip)
+1. 
 
 ## Terms
 
